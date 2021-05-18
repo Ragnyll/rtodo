@@ -1,0 +1,9 @@
+[package]
+name = "rust-todo"
+version = "0.1.0"
+authors = ["ragnyll <ragnyll@gallowzhumour.dev>"]
+edition = "2018"
+
+[dependencies]
+reqwest = { version = "^0.11.3", features = ["json"] }
+tokio = { version = "1", "features" = ["full"] }
