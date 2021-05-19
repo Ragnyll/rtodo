@@ -1,6 +1,7 @@
 use reqwest::Result;
 use reqwest::Client;
 use reqwest::{ClientBuilder, header};
+use serde_json::*;
 
 use std::time::Duration;
 
@@ -44,11 +45,11 @@ async fn main() -> Result<()> {
     const USERNAME: &str = "Ragnyll";
     let timeout = Duration::new(5, 0);
 
-    let gitlab_api_conf = GitlabApiConf::new(BASE_URL, "MY_TOKEN", USERNAME, timeout);
+    let gitlab_api_conf = GitlabApiConf::new(BASE_URL, "SECRET", USERNAME, timeout);
     let mut headers = header::HeaderMap::new();
     headers.insert(
         "PRIVATE-TOKEN",
-        header::HeaderValue::from_static("MY_TOKEN"),
+        header::HeaderValue::from_static("SECRET"),
     );
     let client = ClientBuilder::new()
         .timeout(gitlab_api_conf.get_timeout())
@@ -81,23 +82,27 @@ async fn main() -> Result<()> {
 
 async fn determine_user_id(gitlab_api_conf: GitlabApiConf, client: Client) -> String {
     let user_url = format!(
-        "{}/users?{}",
+        "{}/users?username={}",
         gitlab_api_conf.get_base_url(),
         gitlab_api_conf.get_username()
     );
-    println!("{}", user_url);
 
     match client.get(&user_url).send().await {
         Ok(response) => {
             if response.status().is_success() {
+                let bytes = response.bytes().await.expect("Unable to deserialize response from user_url to bytes");
+                let value: Value = serde_json::from_str(std::str::from_utf8(&bytes).expect("Invalid utf8 sequence")).expect("unable to deserialze response to json value");
+                // i should do a length check on value first to make sure that there arent multiple users
+                // and maybe a check to see that id exists
+                println!("{}", value.get(0).unwrap()["id"]);
                 return String::from("oh hi");
             } else {
-                println!("{}", response.status());
-                return String::from("shit");
+                // TODO: dont panic just exit with an error code
+                panic!("User_url request was not succesful with code : {}", response.status());
             }
         }
         _ => {
-            return String::from("That didnt work at all");
+            return String::from("Unable to complete request to user url");
         }
     }
 }
