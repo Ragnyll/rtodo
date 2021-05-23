@@ -1,3 +1,5 @@
+extern crate exitcode;
+
 use reqwest::Result;
 use reqwest::Client;
 use reqwest::{ClientBuilder, header};
@@ -80,6 +82,10 @@ async fn main() -> Result<()> {
     // merge to ~/todo.md
 }
 
+// async fn get_response(gitlab_api_conf: GitlabApiConf, client: Client, url: &str) -> Value {
+
+// }
+
 async fn determine_user_id(gitlab_api_conf: GitlabApiConf, client: Client) -> String {
     let user_url = format!(
         "{}/users?username={}",
@@ -87,22 +93,14 @@ async fn determine_user_id(gitlab_api_conf: GitlabApiConf, client: Client) -> St
         gitlab_api_conf.get_username()
     );
 
-    match client.get(&user_url).send().await {
-        Ok(response) => {
-            if response.status().is_success() {
-                let bytes = response.bytes().await.expect("Unable to deserialize response from user_url to bytes");
-                let value: Value = serde_json::from_str(std::str::from_utf8(&bytes).expect("Invalid utf8 sequence")).expect("unable to deserialze response to json value");
-                // i should do a length check on value first to make sure that there arent multiple users
-                // and maybe a check to see that id exists
-                println!("{}", value.get(0).unwrap()["id"]);
-                return String::from("oh hi");
-            } else {
-                // TODO: dont panic just exit with an error code
-                panic!("User_url request was not succesful with code : {}", response.status());
-            }
-        }
-        _ => {
-            return String::from("Unable to complete request to user url");
-        }
+    let response = client.get(&user_url).send().await.expect("Did not receive a response from user_url");
+    if response.status().is_success() {
+        let bytes = response.bytes().await.expect("Unable to deserialize response from user_url to bytes");
+        let value: Value = serde_json::from_str(std::str::from_utf8(&bytes).expect("Invalid utf8 sequence")).expect("unable to deserialze response to json value");
+        // This is brittle but i dont really care. I cant think of a real case where len > 1
+        return String::from(format!("{}",value.get(0).unwrap()["id"]));
+    } else {
+        eprintln!("Unsuccesful Response {} from url {}", response.status(), user_url);
+        std::process::exit(exitcode::DATAERR);
     }
 }
