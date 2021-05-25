@@ -58,7 +58,9 @@ async fn main() -> Result<()> {
         .default_headers(headers)
         .build()?;
 
-    println!("{}", determine_user_id(gitlab_api_conf, client).await);
+    let user_id = determine_user_id(&gitlab_api_conf, &client).await;
+    let user_projects = get_projects_belonging_to_user(&gitlab_api_conf, &client, &user_id).await;
+    println!("{:?}", user_projects);
 
     Ok(())
 
@@ -82,25 +84,80 @@ async fn main() -> Result<()> {
     // merge to ~/todo.md
 }
 
-// async fn get_response(gitlab_api_conf: GitlabApiConf, client: Client, url: &str) -> Value {
-
-// }
-
-async fn determine_user_id(gitlab_api_conf: GitlabApiConf, client: Client) -> String {
+async fn determine_user_id(gitlab_api_conf: &GitlabApiConf, client: &Client) -> String {
     let user_url = format!(
         "{}/users?username={}",
         gitlab_api_conf.get_base_url(),
         gitlab_api_conf.get_username()
     );
 
-    let response = client.get(&user_url).send().await.expect("Did not receive a response from user_url");
+    let response = client
+        .get(&user_url)
+        .send()
+        .await
+        .expect("Did not receive a response from user_url");
     if response.status().is_success() {
-        let bytes = response.bytes().await.expect("Unable to deserialize response from user_url to bytes");
-        let value: Value = serde_json::from_str(std::str::from_utf8(&bytes).expect("Invalid utf8 sequence")).expect("unable to deserialze response to json value");
+        let bytes = response
+            .bytes()
+            .await
+            .expect("Unable to deserialize response from user_url to bytes");
+        let value: Value =
+            serde_json::from_str(std::str::from_utf8(&bytes).expect("Invalid utf8 sequence"))
+                .expect("unable to deserialze response to json value");
         // This is brittle but i dont really care. I cant think of a real case where len > 1
-        return String::from(format!("{}",value.get(0).unwrap()["id"]));
+        return String::from(format!("{}", value.get(0).unwrap()["id"]));
     } else {
-        eprintln!("Unsuccesful Response {} from url {}", response.status(), user_url);
+        eprintln!(
+            "Unsuccesful Response {} from url {}",
+            response.status(),
+            user_url
+        );
+        std::process::exit(exitcode::DATAERR);
+    }
+}
+
+/// Returns a list of project id belonging to user_id
+async fn get_projects_belonging_to_user(
+    gitlab_api_conf: &GitlabApiConf,
+    client: &Client,
+    user_id: &str,
+) -> Vec<u64> {
+    let project_url = format!(
+        "{}/users/{}/projects",
+        gitlab_api_conf.get_base_url(),
+        user_id,
+    );
+
+    let response = client
+        .get(&project_url)
+        .send()
+        .await
+        .expect("Did not receive a response from project_url");
+    if response.status().is_success() {
+        let bytes = response
+            .bytes()
+            .await
+            .expect("Unable to deserialize response from user_url to bytes");
+        let value: Value =
+            serde_json::from_str(std::str::from_utf8(&bytes).expect("Invalid utf8 sequence"))
+                .expect("unable to deserialze response to json value");
+
+        let mut project_ids: Vec<u64> = vec![];
+        for project in value.as_array().expect("response is not an array") {
+            project_ids.push(
+                project["id"]
+                    .as_u64()
+                    .expect("Unable to deserialize project.id as u64"),
+            );
+        }
+        // This is brittle but i dont really care. I cant think of a real case where len > 1
+        return project_ids;
+    } else {
+        eprintln!(
+            "Unsuccesful Response {} from url {}",
+            response.status(),
+            user_id
+        );
         std::process::exit(exitcode::DATAERR);
     }
 }
