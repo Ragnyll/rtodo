@@ -60,7 +60,8 @@ async fn main() -> Result<()> {
 
     let user_id = determine_user_id(&gitlab_api_conf, &client).await;
     let user_projects = get_projects_belonging_to_user(&gitlab_api_conf, &client, &user_id).await;
-    println!("{:?}", user_projects);
+    let assigned_issues = get_all_issues_assigned_to_user(&gitlab_api_conf, &client, &user_id).await;
+    let reported_issues = get_all_issues_reported_by_user(&gitlab_api_conf, &client, &user_id).await;
 
     Ok(())
 
@@ -82,6 +83,14 @@ async fn main() -> Result<()> {
     // Merge on project title to lightweight object
     //
     // merge to ~/todo.md
+}
+
+async fn get_all_issues_assigned_to_user(gitlab_api_conf: &GitlabApiConf, client: &Client, user_id: &str) -> String {
+    return String::from("heck");
+}
+
+async fn get_all_issues_reported_by_user(gitlab_api_conf: &GitlabApiConf, client: &Client, user_id: &str) -> String {
+    return String::from("heck");
 }
 
 async fn determine_user_id(gitlab_api_conf: &GitlabApiConf, client: &Client) -> String {
