@@ -1,4 +1,4 @@
-use super::project_components::{Group, Namespace, Owner, Statistics, Links};
+use super::gitlab_project_components::{Group, Namespace, Owner, Statistics, Links};
 
 #[derive(Deserialize, Debug)]
 pub struct GitlabProject {

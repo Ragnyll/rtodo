@@ -12,6 +12,7 @@ use serde_json::*;
 mod gitlab_api_objects;
 use crate::gitlab_api_objects::GitlabProject;
 use crate::gitlab_api_objects::GitlabApiConf;
+use crate::gitlab_api_objects::GitlabApiClient;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -25,18 +26,15 @@ async fn main() -> Result<()> {
         "PRIVATE-TOKEN",
         header::HeaderValue::from_static("SECRET"),
     );
-    let client = ClientBuilder::new()
+    let client= ClientBuilder::new()
         .timeout(gitlab_api_conf.get_timeout())
         .default_headers(headers)
         .build()?;
 
-    let user_id = determine_user_id(&gitlab_api_conf, &client).await;
-    let user_projects = get_projects_belonging_to_user(&gitlab_api_conf, &client, &user_id).await;
-    let assigned_issues = get_all_issues_assigned_to_user(&gitlab_api_conf, &client, &user_id).await;
-    let reported_issues = get_all_issues_reported_by_user(&gitlab_api_conf, &client, &user_id).await;
-
-    println!("{:?}", user_id);
-    println!("{:?}", user_projects);
+    // let user_id = determine_user_id(&gitlab_api_conf, &client).await;
+    // let user_projects = get_projects_belonging_to_user(&gitlab_api_conf, &client, &user_id).await;
+    // let assigned_issues = get_all_issues_assigned_to_user(&gitlab_api_conf, &client, &user_id).await;
+    // let reported_issues = get_all_issues_reported_by_user(&gitlab_api_conf, &client, &user_id).await;
 
 
     Ok(())
@@ -69,38 +67,6 @@ async fn get_all_issues_reported_by_user(gitlab_api_conf: &GitlabApiConf, client
     return String::from("heck");
 }
 
-/// Pull only the user from gitlab respons
-async fn determine_user_id(gitlab_api_conf: &GitlabApiConf, client: &Client) -> String {
-    let user_url = format!(
-        "{}/users?username={}",
-        gitlab_api_conf.get_base_url(),
-        gitlab_api_conf.get_username()
-    );
-
-    let response = client
-        .get(&user_url)
-        .send()
-        .await
-        .expect("Did not receive a response from user_url");
-    if response.status().is_success() {
-        let bytes = response
-            .bytes()
-            .await
-            .expect("Unable to deserialize response from user_url to bytes");
-        let value: Value =
-            serde_json::from_str(std::str::from_utf8(&bytes).expect("Invalid utf8 sequence"))
-                .expect("unable to deserialze response to json value");
-        // This is brittle but i dont really care. I cant think of a real case where len > 1
-        return String::from(format!("{}", value.get(0).unwrap()["id"]));
-    } else {
-        eprintln!(
-            "Unsuccesful Response {} from url {}",
-            response.status(),
-            user_url
-        );
-        std::process::exit(exitcode::DATAERR);
-    }
-}
 
 /// Returns a list of project id belonging to user_id
 async fn get_projects_belonging_to_user(
