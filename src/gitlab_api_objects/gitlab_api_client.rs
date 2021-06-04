@@ -1,30 +1,39 @@
-use std::time::Duration;
-use reqwest::{ Client, ClientBuilder };
+use reqwest::{Client, ClientBuilder};
+use reqwest::header;
 use serde_json::Value;
+use std::error::Error;
+use std::fmt;
 
 pub struct GitlabApiClient {
-    client: reqwest::Client,
+    client: Client,
+    conf: super::GitlabApiConf,
 }
 
 impl GitlabApiClient {
-    pub fn new() -> GitlabApiClient {
-        GitlabApiClient {
+    pub fn new(gitlab_conf: super::GitlabApiConf) -> Result<GitlabApiClient, ClientCreationError> {
+        let mut default_headers = header::HeaderMap::new();
+        let token_header_value = header::HeaderValue::from_str(gitlab_conf.get_accesss_token())?;
+        default_headers.insert("PRIVATE-TOKEN", token_header_value);
+
+        Ok(GitlabApiClient {
             client: ClientBuilder::new()
-            .timeout(Duration::new(5,0))
-            // .default_headers(headers)
-            .build().unwrap()
-        }
+                .timeout(gitlab_conf.get_timeout())
+                .default_headers(default_headers)
+                .build()?,
+            conf: gitlab_conf,
+        })
     }
 
     /// Pull only the user from gitlab respons
-    async fn determine_user_id(gitlab_api_conf: &super::api_conf::GitlabApiConf, client: &Client) -> String {
+    pub async fn determine_user_id(&self) -> String {
         let user_url = format!(
             "{}/users?username={}",
-            gitlab_api_conf.get_base_url(),
-            gitlab_api_conf.get_username()
+            self.conf.get_base_url(),
+            self.conf.get_username()
         );
 
-        let response = client
+        let response = self
+            .client
             .get(&user_url)
             .send()
             .await
@@ -48,5 +57,42 @@ impl GitlabApiClient {
             std::process::exit(exitcode::DATAERR);
         }
     }
+}
 
+#[derive(Debug)]
+pub struct ClientCreationError {
+    details: String,
+}
+
+impl ClientCreationError {
+    fn new(msg: &str) -> ClientCreationError {
+        ClientCreationError {
+            details: msg.to_string(),
+        }
+    }
+
+}
+
+impl fmt::Display for ClientCreationError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f,"{}",self.details)
+    }
+}
+
+impl Error for ClientCreationError {
+    fn description(&self) -> &str {
+        &self.details
+    }
+}
+
+impl From<header::InvalidHeaderValue> for ClientCreationError {
+fn from(err: header::InvalidHeaderValue) -> Self {
+        ClientCreationError::new(&err.to_string())
+    }
+}
+
+impl From<reqwest::Error> for ClientCreationError {
+    fn from(err: reqwest::Error) -> Self {
+        ClientCreationError::new(&err.to_string())
+    }
 }

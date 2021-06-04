@@ -6,8 +6,6 @@ use std::time::Duration;
 
 use reqwest::Result;
 use reqwest::Client;
-use reqwest::{ClientBuilder, header};
-use serde_json::*;
 
 mod gitlab_api_objects;
 use crate::gitlab_api_objects::GitlabProject;
@@ -21,17 +19,10 @@ async fn main() -> Result<()> {
     let timeout = Duration::new(5, 0);
 
     let gitlab_api_conf = GitlabApiConf::new(BASE_URL, "SECRET", USERNAME, timeout);
-    let mut headers = header::HeaderMap::new();
-    headers.insert(
-        "PRIVATE-TOKEN",
-        header::HeaderValue::from_static("SECRET"),
-    );
-    let client= ClientBuilder::new()
-        .timeout(gitlab_api_conf.get_timeout())
-        .default_headers(headers)
-        .build()?;
+    let gitlab_api_client = GitlabApiClient::new(gitlab_api_conf).expect("Unable to create GitlabApiClient");
 
-    // let user_id = determine_user_id(&gitlab_api_conf, &client).await;
+    let user_id = gitlab_api_client.determine_user_id().await;
+    println!("{:?}", user_id);
     // let user_projects = get_projects_belonging_to_user(&gitlab_api_conf, &client, &user_id).await;
     // let assigned_issues = get_all_issues_assigned_to_user(&gitlab_api_conf, &client, &user_id).await;
     // let reported_issues = get_all_issues_reported_by_user(&gitlab_api_conf, &client, &user_id).await;
@@ -39,24 +30,6 @@ async fn main() -> Result<()> {
 
     Ok(())
 
-    // decrypt access token: default to decrypting from .password_store dir but allow override
-    // figure our the user id and cache it
-    // /users?username=<username
-    // >>> response = json.loads(requests.get('https://gitlab.com/api/v4/users?username=ragnyll', headers={'Authorization': 'access_token ...........'}).text)
-    // >>> user = json.loads(requests.get('https://gitlab.com/api/v4/users/2436873', headers={'Authorization': 'access_token .........'}).text)
-    //
-    // get projects belonging to user
-    //
-    // >>> projects = json.loads(requests.get('https://gitlab.com/api/v4/users/2436873/projects', headers={'Authorization': 'access_token ...........'}).text)
-    //
-    // Get all issues assigned to and logged by the user
-    // >>> response = json.loads(requests.get('https://gitlab.com/api/v4/issues?assignee_id=2436873', headers={'PRIVATE-TOKEN': '.........'}).text)
-    //
-    // >>> response = json.loads(requests.get('https://gitlab.com/api/v4/issues?author_id=2436873', headers={'PRIVATE-TOKEN': '.............'}).text)
-    //
-    // Merge on project title to lightweight object
-    //
-    // merge to ~/todo.md
 }
 
 async fn get_all_issues_assigned_to_user(gitlab_api_conf: &GitlabApiConf, client: &Client, user_id: &str) -> String {
