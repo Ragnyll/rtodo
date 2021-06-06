@@ -1,4 +1,5 @@
 use reqwest::{Client, ClientBuilder};
+use super::api_response_objects::{GitlabProject};
 use reqwest::header;
 use serde_json::Value;
 use std::error::Error;
@@ -57,6 +58,36 @@ impl GitlabApiClient {
             std::process::exit(exitcode::DATAERR);
         }
     }
+
+    /// Returns a list of project id belonging to user_id
+    pub async fn get_projects_belonging_to_user(&self, user_id: &str) -> Vec<GitlabProject> {
+        let project_url = format!("{}/users/{}/projects", self.conf.get_base_url(), user_id);
+
+        let response = self
+            .client
+            .get(&project_url)
+            .send()
+            .await
+            .expect("Did not receive a response from project_url");
+        if response.status().is_success() {
+            let bytes = response
+                .bytes()
+                .await
+                .expect("Unable to deserialize response from user_url to bytes");
+
+            return serde_json::from_str(
+                std::str::from_utf8(&bytes).expect("Invalid utf8 sequence"),
+            )
+            .expect("unable to deserialze response to json value");
+        } else {
+            eprintln!(
+                "Unsuccesful Response {} from url {}",
+                response.status(),
+                user_id
+            );
+            std::process::exit(exitcode::DATAERR);
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -70,12 +101,11 @@ impl ClientCreationError {
             details: msg.to_string(),
         }
     }
-
 }
 
 impl fmt::Display for ClientCreationError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f,"{}",self.details)
+        write!(f, "{}", self.details)
     }
 }
 
@@ -86,7 +116,7 @@ impl Error for ClientCreationError {
 }
 
 impl From<header::InvalidHeaderValue> for ClientCreationError {
-fn from(err: header::InvalidHeaderValue) -> Self {
+    fn from(err: header::InvalidHeaderValue) -> Self {
         ClientCreationError::new(&err.to_string())
     }
 }
