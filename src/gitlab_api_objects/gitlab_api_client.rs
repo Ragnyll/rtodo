@@ -5,13 +5,15 @@ use serde_json::Value;
 use std::error::Error;
 use std::fmt;
 
+use crate::conf::gitlab_api_conf::GitlabApiConf;
+
 pub struct GitlabApiClient {
     client: Client,
-    conf: super::GitlabApiConf,
+    conf: GitlabApiConf,
 }
 
 impl GitlabApiClient {
-    pub fn new(gitlab_conf: super::GitlabApiConf) -> Result<GitlabApiClient, ClientCreationError> {
+    pub fn new(gitlab_conf: GitlabApiConf) -> Result<GitlabApiClient, ClientCreationError> {
         let mut default_headers = header::HeaderMap::new();
         let token_header_value = header::HeaderValue::from_str(gitlab_conf.get_accesss_token())?;
         default_headers.insert("PRIVATE-TOKEN", token_header_value);

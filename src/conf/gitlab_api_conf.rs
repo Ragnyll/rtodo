@@ -1,5 +1,6 @@
 use std::time::Duration;
 
+#[derive(Clone)]
 pub struct GitlabApiConf {
     base_url: String,
     access_token: String,
