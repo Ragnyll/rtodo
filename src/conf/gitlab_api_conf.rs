@@ -1,20 +1,21 @@
 use std::time::Duration;
 
-#[derive(Clone)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct GitlabApiConf {
     base_url: String,
     access_token: String,
     username: String,
-    timeout: Duration,
+    timeout: Option<Duration>,
 }
 
 impl GitlabApiConf {
+    #[allow(dead_code)]
     pub fn new(base_url: &str, access_token: &str, username: &str, timeout: Duration) -> GitlabApiConf {
         GitlabApiConf {
             base_url: String::from(base_url),
             access_token: String::from(access_token),
             username: String::from(username),
-            timeout: timeout,
+            timeout: Some(timeout),
         }
     }
 
@@ -26,7 +27,7 @@ impl GitlabApiConf {
         &self.username
     }
 
-    pub fn get_timeout(&self) -> Duration {
+    pub fn get_timeout(&self) -> Option<Duration> {
         self.timeout
     }
 

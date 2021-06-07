@@ -12,7 +12,7 @@ use conf::conf::Conf;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let conf = Conf::new().expect("Unable to construst conf object");
+    let conf = Conf::new(None).expect("Unable to construst conf object");
     let gitlab_api_conf = conf
         .get_gitlab_api_conf()
         .clone()

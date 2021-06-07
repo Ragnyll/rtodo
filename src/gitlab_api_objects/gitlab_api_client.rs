@@ -7,6 +7,8 @@ use std::fmt;
 
 use crate::conf::gitlab_api_conf::GitlabApiConf;
 
+const DEFAULT_TIMEOUT_SECONDS: u64= 5;
+
 pub struct GitlabApiClient {
     client: Client,
     conf: GitlabApiConf,
@@ -20,7 +22,10 @@ impl GitlabApiClient {
 
         Ok(GitlabApiClient {
             client: ClientBuilder::new()
-                .timeout(gitlab_conf.get_timeout())
+                .timeout(match gitlab_conf.get_timeout() {
+                    Some(t) => t,
+                    None => std::time::Duration::new(DEFAULT_TIMEOUT_SECONDS, 0)
+                })
                 .default_headers(default_headers)
                 .build()?,
             conf: gitlab_conf,

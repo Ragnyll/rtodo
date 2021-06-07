@@ -1,28 +1,31 @@
-extern crate dirs;
-
 use std::error::Error;
+use std::io::Read;
 use std::fmt;
-use std::time::Duration;
+use std::fs::File;
 use std::path::PathBuf;
 
 /// Master conf containing all the individual conf objects and utilities for building them
+#[derive(Clone, Debug, Deserialize)]
 pub struct Conf {
     gitlab_api_conf: Option<super::gitlab_api_conf::GitlabApiConf>,
 }
 
 impl Conf {
-    pub fn new() -> Result<Conf, ConfCreationError> {
+    pub fn new(conf_path: Option<String>) -> Result<Conf, ConfCreationError> {
         let home_dir = find_home_dir()?;
-        let BASE_URL = "https://gitlab.com/api/v4/";
-        let USERNAME = "Ragnyll";
-        let TOKEN = "SECRET";
-        let timeout = Duration::new(5, 0);
 
-        Ok(Conf {
-            gitlab_api_conf: Some(super::GitlabApiConf::new(
-                BASE_URL, TOKEN, USERNAME, timeout,
-            )),
-        })
+        let mut conf_data = String::new();
+        let _ = match conf_path {
+            Some(p) => File::open(p)?.read_to_string(&mut conf_data),
+            None => {
+                let p = format!("{}/{}", home_dir, ".config/rtodo/conf.json");
+                File::open(p)?.read_to_string(&mut conf_data)
+            }
+        };
+
+        let conf_data: Conf = serde_json::from_str(&conf_data)?;
+
+        Ok(conf_data)
     }
 
     pub fn get_gitlab_api_conf(&self) -> &Option<super::GitlabApiConf> {
@@ -69,3 +72,18 @@ impl Error for ConfCreationError {
         &self.details
     }
 }
+
+impl From<std::io::Error> for ConfCreationError {
+    fn from(err: std::io::Error) -> Self {
+        ConfCreationError::new(&err.to_string())
+    }
+}
+
+impl From<serde_json::Error> for ConfCreationError {
+    fn from(err: serde_json::Error) -> Self {
+        ConfCreationError::new(&err.to_string())
+    }
+}
+
+
+// TODO: impl deserialize for duration
