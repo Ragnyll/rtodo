@@ -1,5 +1,5 @@
 use reqwest::{Client, ClientBuilder};
-use super::api_response_objects::{GitlabProject};
+use super::api_response_objects::{GitlabProject, GitlabUser, GitlabIssue};
 use reqwest::header;
 use serde_json::Value;
 use std::error::Error;
@@ -7,7 +7,7 @@ use std::fmt;
 
 use crate::conf::gitlab_api_conf::GitlabApiConf;
 
-const DEFAULT_TIMEOUT_SECONDS: u64= 5;
+const DEFAULT_TIMEOUT_SECONDS: u64 = 5;
 
 pub struct GitlabApiClient {
     client: Client,
@@ -24,7 +24,7 @@ impl GitlabApiClient {
             client: ClientBuilder::new()
                 .timeout(match gitlab_conf.get_timeout() {
                     Some(t) => t,
-                    None => std::time::Duration::new(DEFAULT_TIMEOUT_SECONDS, 0)
+                    None => std::time::Duration::new(DEFAULT_TIMEOUT_SECONDS, 0),
                 })
                 .default_headers(default_headers)
                 .build()?,
@@ -65,7 +65,6 @@ impl GitlabApiClient {
             std::process::exit(exitcode::DATAERR);
         }
     }
-
     /// Returns a list of project id belonging to user_id
     pub async fn get_projects_belonging_to_user(&self, user_id: &str) -> Vec<GitlabProject> {
         let project_url = format!("{}/users/{}/projects", self.conf.get_base_url(), user_id);
@@ -81,6 +80,103 @@ impl GitlabApiClient {
                 .bytes()
                 .await
                 .expect("Unable to deserialize response from user_url to bytes");
+
+            return serde_json::from_str(
+                std::str::from_utf8(&bytes).expect("Invalid utf8 sequence"),
+            )
+            .expect("unable to deserialze response to json value");
+        } else {
+            eprintln!(
+                "Unsuccesful Response {} from url {}",
+                response.status(),
+                user_id
+            );
+            std::process::exit(exitcode::DATAERR);
+        }
+    }
+
+    /// Returns a list of project id belonging to user_id
+    pub async fn get_gitlab_user(&self, user_id: &str) -> GitlabUser {
+        let user_url = format!("{}/users/{}", self.conf.get_base_url(), user_id);
+
+        let response = self
+            .client
+            .get(&user_url)
+            .send()
+            .await
+            .expect("Did not receive a response from user_url");
+        if response.status().is_success() {
+            let bytes = response
+                .bytes()
+                .await
+                .expect("Unable to deserialize response from user_url to bytes");
+
+            return serde_json::from_str(
+                std::str::from_utf8(&bytes).expect("Invalid utf8 sequence"),
+            )
+            .expect("unable to deserialze response to json value");
+        } else {
+            eprintln!(
+                "Unsuccesful Response {} from url {}",
+                response.status(),
+                user_id
+            );
+            std::process::exit(exitcode::DATAERR);
+        }
+    }
+
+    pub async fn get_issues_assigned_to_user(&self, user_id: &str) -> Vec<GitlabIssue> {
+        let issue_assignee_url = format!(
+            "{}/issues?assignee_id={}",
+            self.conf.get_base_url(),
+            user_id
+        );
+
+        let response = self
+            .client
+            .get(&issue_assignee_url)
+            .send()
+            .await
+            .expect("Did not receive a response from i");
+        if response.status().is_success() {
+            let bytes = response
+                .bytes()
+                .await
+                .expect("Unable to deserialize response from issue_assignee_url to bytes");
+
+            return serde_json::from_str(
+                std::str::from_utf8(&bytes).expect("Invalid utf8 sequence"),
+            )
+            .expect("unable to deserialze response to json value");
+        } else {
+            eprintln!(
+                "Unsuccesful Response {} from url {}",
+                response.status(),
+                user_id
+            );
+            std::process::exit(exitcode::DATAERR);
+        }
+    }
+
+    // TODO: broken, view example
+    pub async fn get_issues_reported_by_user(&self, user_id: &str) -> Vec<GitlabIssue> {
+        let issue_assignee_url = format!(
+            "{}/issues?author_id={}",
+            self.conf.get_base_url(),
+            user_id
+        );
+
+        let response = self
+            .client
+            .get(&issue_assignee_url)
+            .send()
+            .await
+            .expect("Did not receive a response from i");
+        if response.status().is_success() {
+            let bytes = response
+                .bytes()
+                .await
+                .expect("Unable to deserialize response from issue_assignee_url to bytes");
 
             return serde_json::from_str(
                 std::str::from_utf8(&bytes).expect("Invalid utf8 sequence"),

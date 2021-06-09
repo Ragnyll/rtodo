@@ -25,9 +25,15 @@ async fn main() -> Result<()> {
     let user_projects = gitlab_api_client
         .get_projects_belonging_to_user(&user_id)
         .await;
-    println!(" projects {:?}", user_projects.get(0));
-    // let assigned_issues = get_all_issues_assigned_to_user(&gitlab_api_conf, &client, &user_id).await;
-    // let reported_issues = get_all_issues_reported_by_user(&gitlab_api_conf, &client, &user_id).await;
+    println!("projects {:?}", user_projects.get(0));
+    let user = gitlab_api_client
+        .get_gitlab_user(&user_id)
+        .await;
+    println!("user {:?}", user);
+    let issues_assigned_to_user = gitlab_api_client.get_issues_assigned_to_user(&user_id).await;
+    println!("assigned_issues {:?}", issues_assigned_to_user);
+    // let reported_issues = gitlab_api_client.get_issues_reported_by_user(&user_id).await;
+    // println!("reported_issues {:?}", reported_issues);
 
     Ok(())
 }
