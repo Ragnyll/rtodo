@@ -33,162 +33,79 @@ impl GitlabApiClient {
     }
 
     /// Pull only the user from gitlab respons
-    pub async fn determine_user_id(&self) -> String {
+    pub async fn determine_user_id(&self) -> Result<String, ClientResponseError> {
         let user_url = format!(
             "{}/users?username={}",
             self.conf.get_base_url(),
             self.conf.get_username()
         );
 
-        let response = self
-            .client
-            .get(&user_url)
-            .send()
-            .await
-            .expect("Did not receive a response from user_url");
+        let response = self.client.get(&user_url).send().await?;
         if response.status().is_success() {
-            let bytes = response
-                .bytes()
-                .await
-                .expect("Unable to deserialize response from user_url to bytes");
-            let value: Value =
-                serde_json::from_str(std::str::from_utf8(&bytes).expect("Invalid utf8 sequence"))
-                    .expect("unable to deserialze response to json value");
+            let bytes = response.bytes().await?;
+            let value: Value = serde_json::from_str(std::str::from_utf8(&bytes)?)?;
             // This is brittle but i dont really care. I cant think of a real case where len > 1
-            return String::from(format!("{}", value.get(0).unwrap()["id"]));
+            return Ok(String::from(format!("{}", value.get(0).unwrap()["id"])));
         } else {
-            eprintln!(
+            return Err(ClientResponseError::new(
                 "Unsuccesful Response {} from url {}",
-                response.status(),
-                user_url
-            );
-            std::process::exit(exitcode::DATAERR);
+            ));
         }
     }
     /// Returns a list of project id belonging to user_id
-    pub async fn get_projects_belonging_to_user(&self, user_id: &str) -> Vec<GitlabProject> {
+    pub async fn get_projects_belonging_to_user(
+        &self,
+        user_id: &str,
+    ) -> Result<Vec<GitlabProject>, ClientResponseError> {
         let project_url = format!("{}/users/{}/projects", self.conf.get_base_url(), user_id);
 
-        let response = self
-            .client
-            .get(&project_url)
-            .send()
-            .await
-            .expect("Did not receive a response from project_url");
-        if response.status().is_success() {
-            let bytes = response
-                .bytes()
-                .await
-                .expect("Unable to deserialize response from user_url to bytes");
-
-            return serde_json::from_str(
-                std::str::from_utf8(&bytes).expect("Invalid utf8 sequence"),
-            )
-            .expect("unable to deserialze response to json value");
-        } else {
-            eprintln!(
+        let response = self.client.get(&project_url).send().await?;
+        match response.status().is_success() {
+            true => {
+                let bytes = response.bytes().await?;
+                Ok(serde_json::from_str(std::str::from_utf8(&bytes)?)?)
+            }
+            false => Err(ClientResponseError::new(
                 "Unsuccesful Response {} from url {}",
-                response.status(),
-                user_id
-            );
-            std::process::exit(exitcode::DATAERR);
+            )),
         }
     }
 
     /// Returns a list of project id belonging to user_id
-    pub async fn get_gitlab_user(&self, user_id: &str) -> GitlabUser {
+    pub async fn get_gitlab_user(&self, user_id: &str) -> Result<GitlabUser, ClientResponseError> {
         let user_url = format!("{}/users/{}", self.conf.get_base_url(), user_id);
 
-        let response = self
-            .client
-            .get(&user_url)
-            .send()
-            .await
-            .expect("Did not receive a response from user_url");
-        if response.status().is_success() {
-            let bytes = response
-                .bytes()
-                .await
-                .expect("Unable to deserialize response from user_url to bytes");
-
-            return serde_json::from_str(
-                std::str::from_utf8(&bytes).expect("Invalid utf8 sequence"),
-            )
-            .expect("unable to deserialze response to json value");
-        } else {
-            eprintln!(
+        let response = self.client.get(&user_url).send().await?;
+        match response.status().is_success() {
+            true => {
+                let bytes = response.bytes().await?;
+                Ok(serde_json::from_str(std::str::from_utf8(&bytes)?)?)
+            }
+            false => Err(ClientResponseError::new(
                 "Unsuccesful Response {} from url {}",
-                response.status(),
-                user_id
-            );
-            std::process::exit(exitcode::DATAERR);
+            )),
         }
     }
 
-    pub async fn get_issues_assigned_to_user(&self, user_id: &str) -> Vec<GitlabIssue> {
+    pub async fn get_issues_assigned_to_user(
+        &self,
+        user_id: &str,
+    ) -> Result<Vec<GitlabIssue>, ClientResponseError> {
         let issue_assignee_url = format!(
             "{}/issues?assignee_id={}",
             self.conf.get_base_url(),
             user_id
         );
 
-        let response = self
-            .client
-            .get(&issue_assignee_url)
-            .send()
-            .await
-            .expect("Did not receive a response from i");
-        if response.status().is_success() {
-            let bytes = response
-                .bytes()
-                .await
-                .expect("Unable to deserialize response from issue_assignee_url to bytes");
-
-            return serde_json::from_str(
-                std::str::from_utf8(&bytes).expect("Invalid utf8 sequence"),
-            )
-            .expect("unable to deserialze response to json value");
-        } else {
-            eprintln!(
+        let response = self.client.get(&issue_assignee_url).send().await?;
+        match response.status().is_success() {
+            true => {
+                let bytes = response.bytes().await?;
+                Ok(serde_json::from_str(std::str::from_utf8(&bytes)?)?)
+            }
+            false => Err(ClientResponseError::new(
                 "Unsuccesful Response {} from url {}",
-                response.status(),
-                user_id
-            );
-            std::process::exit(exitcode::DATAERR);
-        }
-    }
-
-    // TODO: broken, view example
-    pub async fn get_issues_reported_by_user(&self, user_id: &str) -> Vec<GitlabIssue> {
-        let issue_assignee_url = format!(
-            "{}/issues?author_id={}",
-            self.conf.get_base_url(),
-            user_id
-        );
-
-        let response = self
-            .client
-            .get(&issue_assignee_url)
-            .send()
-            .await
-            .expect("Did not receive a response from i");
-        if response.status().is_success() {
-            let bytes = response
-                .bytes()
-                .await
-                .expect("Unable to deserialize response from issue_assignee_url to bytes");
-
-            return serde_json::from_str(
-                std::str::from_utf8(&bytes).expect("Invalid utf8 sequence"),
-            )
-            .expect("unable to deserialze response to json value");
-        } else {
-            eprintln!(
-                "Unsuccesful Response {} from url {}",
-                response.status(),
-                user_id
-            );
-            std::process::exit(exitcode::DATAERR);
+            )),
         }
     }
 }
@@ -227,5 +144,42 @@ impl From<header::InvalidHeaderValue> for ClientCreationError {
 impl From<reqwest::Error> for ClientCreationError {
     fn from(err: reqwest::Error) -> Self {
         ClientCreationError::new(&err.to_string())
+    }
+}
+
+#[derive(Debug)]
+pub struct ClientResponseError {
+    details: String,
+}
+
+impl ClientResponseError {
+    fn new(msg: &str) -> ClientResponseError {
+        ClientResponseError {
+            details: msg.to_string(),
+        }
+    }
+}
+
+impl fmt::Display for ClientResponseError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.details)
+    }
+}
+
+impl From<reqwest::Error> for ClientResponseError {
+    fn from(err: reqwest::Error) -> Self {
+        ClientResponseError::new(&err.to_string())
+    }
+}
+
+impl From<std::str::Utf8Error> for ClientResponseError {
+    fn from(err: std::str::Utf8Error) -> Self {
+        ClientResponseError::new(&err.to_string())
+    }
+}
+
+impl From<serde_json::Error> for ClientResponseError {
+    fn from(err: serde_json::Error) -> Self {
+        ClientResponseError::new(&err.to_string())
     }
 }
