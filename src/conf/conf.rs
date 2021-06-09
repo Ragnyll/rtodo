@@ -85,5 +85,4 @@ impl From<serde_json::Error> for ConfCreationError {
     }
 }
 
-
 // TODO: impl deserialize for duration

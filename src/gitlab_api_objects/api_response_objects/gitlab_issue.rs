@@ -44,5 +44,5 @@ pub struct GitlabIssue {
     references: References,
     moved_to_id: Option<String>,
     service_desk_reply_to: Option<String>,
-    health_status: Option<String>
+    health_status: Option<String>,
 }

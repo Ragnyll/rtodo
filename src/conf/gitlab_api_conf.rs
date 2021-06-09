@@ -10,7 +10,12 @@ pub struct GitlabApiConf {
 
 impl GitlabApiConf {
     #[allow(dead_code)]
-    pub fn new(base_url: &str, access_token: &str, username: &str, timeout: Duration) -> GitlabApiConf {
+    pub fn new(
+        base_url: &str,
+        access_token: &str,
+        username: &str,
+        timeout: Duration,
+    ) -> GitlabApiConf {
         GitlabApiConf {
             base_url: String::from(base_url),
             access_token: String::from(access_token),

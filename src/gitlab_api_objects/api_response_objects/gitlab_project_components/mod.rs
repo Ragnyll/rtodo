@@ -1,8 +1,8 @@
 pub mod group;
+pub mod links;
 pub mod namespace;
 pub mod owner;
 pub mod statistics;
-pub mod links;
 
 pub use self::group::Group;
 pub use self::namespace::Namespace;

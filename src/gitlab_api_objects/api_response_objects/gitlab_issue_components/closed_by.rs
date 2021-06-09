@@ -5,5 +5,5 @@ pub struct ClosedBy {
     username: Option<String>,
     state: Option<String>,
     avatar_url: Option<String>,
-    web_url: Option<String>
+    web_url: Option<String>,
 }

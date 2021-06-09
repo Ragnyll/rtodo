@@ -19,5 +19,5 @@ pub struct GitlabProject {
     forks_count: i32,
     star_count: i32,
     last_activity_at: Option<String>,
-    namespace: Namespace
+    namespace: Namespace,
 }
