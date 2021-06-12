@@ -5,8 +5,8 @@ extern crate bytes;
 
 use reqwest::Result;
 
-mod gitlab_api_objects;
-use crate::gitlab_api_objects::GitlabApiClient;
+mod models;
+use crate::models::gitlab_api_objects::GitlabApiClient;
 
 mod conf;
 use conf::conf::Conf;

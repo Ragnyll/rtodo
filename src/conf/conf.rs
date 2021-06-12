@@ -4,9 +4,13 @@ use std::fmt;
 use std::fs::File;
 use std::path::PathBuf;
 
+const DEFAULT_CONF_PATH: &str = ".config/rtodo/conf.json";
+
 /// Master conf containing all the individual conf objects and utilities for building them
 #[derive(Clone, Debug, Deserialize)]
 pub struct Conf {
+    // TODO: change offline mode to an enum with 3 modes "online","conservative","offline"
+    offline_mode: bool,
     gitlab_api_conf: Option<super::gitlab_api_conf::GitlabApiConf>,
 }
 
@@ -18,7 +22,7 @@ impl Conf {
         let _ = match conf_path {
             Some(p) => File::open(p)?.read_to_string(&mut conf_data),
             None => {
-                let p = format!("{}/{}", home_dir, ".config/rtodo/conf.json");
+                let p = format!("{}/{}", home_dir, DEFAULT_CONF_PATH);
                 File::open(p)?.read_to_string(&mut conf_data)
             }
         };
