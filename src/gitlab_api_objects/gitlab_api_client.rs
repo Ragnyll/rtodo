@@ -42,7 +42,7 @@ impl GitlabApiClient {
 
         let response = self.client.get(&user_url).send().await?;
         if response.status().is_success() {
-            let bytes = response.bytes().await?;
+            let bytes: bytes::Bytes = response.bytes().await?;
             let value: Value = serde_json::from_str(std::str::from_utf8(&bytes)?)?;
             // This is brittle but i dont really care. I cant think of a real case where len > 1
             return Ok(String::from(format!("{}", value.get(0).unwrap()["id"])));
@@ -52,61 +52,59 @@ impl GitlabApiClient {
             ));
         }
     }
+
     /// Returns a list of project id belonging to user_id
     pub async fn get_projects_belonging_to_user(
         &self,
         user_id: &str,
     ) -> Result<Vec<GitlabProject>, ClientResponseError> {
-        let project_url = format!("{}/users/{}/projects", self.conf.get_base_url(), user_id);
+        let url = format!("{}/users/{}/projects", self.conf.get_base_url(), user_id);
 
-        let response = self.client.get(&project_url).send().await?;
-        match response.status().is_success() {
-            true => {
-                let bytes = response.bytes().await?;
-                Ok(serde_json::from_str(std::str::from_utf8(&bytes)?)?)
-            }
-            false => Err(ClientResponseError::new(
-                "Unsuccesful Response {} from url {}",
-            )),
+        let response = self.client.get(&url).send().await?;
+        if response.status().is_success() {
+            return Ok(response.json::<Vec<GitlabProject>>().await?);
         }
+        Err(ClientResponseError::new(&format!(
+            "Unsuccesful Response {} from url {}",
+            response.status(),
+            url
+        )))
     }
 
     /// Returns a list of project id belonging to user_id
     pub async fn get_gitlab_user(&self, user_id: &str) -> Result<GitlabUser, ClientResponseError> {
-        let user_url = format!("{}/users/{}", self.conf.get_base_url(), user_id);
+        let url = format!("{}/users/{}", self.conf.get_base_url(), user_id);
 
-        let response = self.client.get(&user_url).send().await?;
-        match response.status().is_success() {
-            true => {
-                let bytes = response.bytes().await?;
-                Ok(serde_json::from_str(std::str::from_utf8(&bytes)?)?)
-            }
-            false => Err(ClientResponseError::new(
-                "Unsuccesful Response {} from url {}",
-            )),
+        let response = self.client.get(&url).send().await?;
+        if response.status().is_success() {
+            return Ok(response.json::<GitlabUser>().await?);
         }
+        Err(ClientResponseError::new(&format!(
+            "Unsuccesful Response {} from url {}",
+            response.status(),
+            url
+        )))
     }
 
     pub async fn get_issues_assigned_to_user(
         &self,
         user_id: &str,
     ) -> Result<Vec<GitlabIssue>, ClientResponseError> {
-        let issue_assignee_url = format!(
+        let url = format!(
             "{}/issues?assignee_id={}",
             self.conf.get_base_url(),
             user_id
         );
 
-        let response = self.client.get(&issue_assignee_url).send().await?;
-        match response.status().is_success() {
-            true => {
-                let bytes = response.bytes().await?;
-                Ok(serde_json::from_str(std::str::from_utf8(&bytes)?)?)
-            }
-            false => Err(ClientResponseError::new(
-                "Unsuccesful Response {} from url {}",
-            )),
+        let response = self.client.get(&url).send().await?;
+        if response.status().is_success() {
+            return Ok(response.json::<Vec<GitlabIssue>>().await?);
         }
+        Err(ClientResponseError::new(&format!(
+            "Unsuccesful Response {} from url {}",
+            response.status(),
+            url
+        )))
     }
 }
 

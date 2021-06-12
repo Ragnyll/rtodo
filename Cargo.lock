@@ -662,6 +662,7 @@ dependencies = [
  "percent-encoding",
  "pin-project-lite",
  "serde",
+ "serde_json",
  "serde_urlencoded",
  "tokio",
  "tokio-native-tls",
@@ -676,6 +677,7 @@ dependencies = [
 name = "rust-todo"
 version = "0.1.0"
 dependencies = [
+ "bytes",
  "dirs",
  "exitcode",
  "reqwest",
