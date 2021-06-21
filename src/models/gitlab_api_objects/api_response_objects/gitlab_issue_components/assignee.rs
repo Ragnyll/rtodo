@@ -7,3 +7,13 @@ pub struct Assignee {
     avatar_url: Option<String>,
     web_url: Option<String>,
 }
+
+impl Assignee {
+    pub fn get_id(&self) -> i32 {
+        self.id
+    }
+
+    pub fn get_username(&self) -> &Option<String> {
+        &self.username
+    }
+}

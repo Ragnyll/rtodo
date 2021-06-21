@@ -7,7 +7,9 @@ use reqwest::Result;
 
 mod models;
 use crate::models::gitlab_api_objects::GitlabApiClient;
-use crate::models::gitlab_api_objects::response_massager;
+use crate::models::todo_issues;
+
+mod converters;
 
 mod conf;
 use conf::conf::Conf;

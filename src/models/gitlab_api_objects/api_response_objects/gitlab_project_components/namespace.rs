@@ -9,3 +9,13 @@ pub struct Namespace {
     avatar_url: Option<String>,
     web_url: Option<String>,
 }
+
+impl Namespace {
+    pub fn get_id(&self) -> i32 {
+        self.id
+    }
+
+    pub fn get_kind(&self) -> &Option<String>  {
+        &self.kind
+    }
+}

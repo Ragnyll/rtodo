@@ -21,3 +21,25 @@ pub struct GitlabProject {
     last_activity_at: Option<String>,
     namespace: Namespace,
 }
+
+impl GitlabProject {
+    pub fn get_id(&self) -> i32 {
+        self.id
+    }
+
+    pub fn get_name(&self) -> &Option<String> {
+        &self.name
+    }
+
+    pub fn get_description(&self) -> &Option<String> {
+        &self.description
+    }
+
+    pub fn get_web_url(&self) -> &Option<String> {
+        &self.web_url
+    }
+
+    pub fn get_namespace(&self) -> &Namespace {
+        &self.namespace
+    }
+}

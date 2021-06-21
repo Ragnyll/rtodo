@@ -46,3 +46,37 @@ pub struct GitlabIssue {
     service_desk_reply_to: Option<String>,
     health_status: Option<String>,
 }
+
+impl GitlabIssue {
+    pub fn get_id(&self) -> i32 {
+        self.id
+    }
+
+    pub fn get_title(&self) -> &Option<String> {
+        &self.title
+    }
+
+    pub fn get_description(&self) -> &Option<String> {
+        &self.description
+    }
+
+    pub fn get_project_id(&self) -> i32 {
+        self.project_id
+    }
+
+    pub fn get_assignee(&self) -> &Option<Assignee> {
+        &self.assignee
+    }
+
+    pub fn get_state(&self) -> &Option<String> {
+        &self.state
+    }
+
+    pub fn get_created_at(&self) -> &Option<String> {
+        &self.created_at
+    }
+
+    pub fn get_updated_at(&self) -> &Option<String> {
+        &self.updated_at
+    }
+}

@@ -22,3 +22,18 @@ pub struct GitlabUser {
     followers: i32,
     following: i32,
 }
+
+impl GitlabUser {
+    pub fn get_id(&self) -> i32 {
+        self.id
+    }
+
+
+    pub fn get_username(&self) -> &Option<String> {
+        &self.username
+    }
+
+    pub fn get_email(&self) -> &Option<String> {
+        &self.public_email
+    }
+}

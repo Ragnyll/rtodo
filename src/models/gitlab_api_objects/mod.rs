@@ -6,3 +6,5 @@ pub use self::gitlab_api_client::GitlabApiClient;
 
 pub mod response_massager;
 pub use self::response_massager::SimplifiedGitlabIssue;
+
+
