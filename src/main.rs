@@ -8,6 +8,9 @@ use reqwest::Result;
 mod models;
 use crate::models::gitlab_api_objects::GitlabApiClient;
 use crate::models::todo_issues;
+use crate::models::todo_issues::todo_issue::todo_issues::Convertable;
+use crate::models::todo_issues::todo_issue::todo_issues::TodoIssue;
+use crate::converters::GitlabIssueContainer;
 
 mod converters;
 
@@ -28,22 +31,26 @@ async fn main() -> Result<()> {
         .determine_user_id()
         .await
         .expect("Unable to determine user_id");
-    println!("user_id {:?}", user_id);
     let user_projects = gitlab_api_client
         .get_projects_belonging_to_user(&user_id)
         .await
         .expect("Unable to find user_projects");
-    println!("user_projects {:?}", user_projects);
-    let user = gitlab_api_client
-        .get_gitlab_user(&user_id)
-        .await
-        .expect("Unable to find user");
-    println!("user {:?}", user);
     let issues_assigned_to_user = gitlab_api_client
         .get_issues_assigned_to_user(&user_id)
         .await
         .expect("Unable to get issues_assigned_to_user");
-    println!("issues_assigned_to_user {:?}", issues_assigned_to_user);
+
+    let mut todos: Vec<TodoIssue> = vec!();
+    for issue in issues_assigned_to_user {
+        // TODO: DEFECT user projects does not account for projects not owned by user_id
+        // TODO: clone is unnessecarily expensive. just figure out the lifetime
+        let gitlab_issue_container = GitlabIssueContainer::new(issue, user_projects.clone());
+        let todo = gitlab_issue_container.convert_to_todo_issue().expect(&String::from(format!("Unable to convert issue {:?} into a todo", gitlab_issue_container)));
+        todos.push(todo);
+    }
+
+    todos.pop();
+    println!("{:?}", todos.pop());
 
     Ok(())
 }

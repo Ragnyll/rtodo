@@ -1,6 +1,6 @@
 use super::gitlab_project_components::Namespace;
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct GitlabProject {
     id: i32,
     description: Option<String>,

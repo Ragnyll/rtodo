@@ -7,9 +7,19 @@ use crate::models::gitlab_api_objects::api_response_objects::GitlabIssue;
 use crate::models::gitlab_api_objects::api_response_objects::Namespace;
 use crate::models::gitlab_api_objects::api_response_objects::Assignee;
 
+#[derive(Debug)]
 pub struct GitlabIssueContainer {
     gitlab_issue: GitlabIssue,
     gitlab_projects: Vec<GitlabProject>,
+}
+
+impl GitlabIssueContainer {
+    pub fn new(gitlab_issue: GitlabIssue, gitlab_projects: Vec<GitlabProject>) -> GitlabIssueContainer {
+        GitlabIssueContainer {
+            gitlab_issue: gitlab_issue,
+            gitlab_projects: gitlab_projects
+        }
+    }
 }
 
 /// For all the supplied issues finds the corresponding project information and gitlab user to
@@ -56,15 +66,16 @@ impl Convertable for GitlabIssueContainer {
 fn map_gitlab_issue_state_to_issue_state(
     gitlab_issue_state: Option<String>,
 ) -> Result<IssueState, ConversionError> {
-    let closed = String::from("closed");
-    let open = String::from("open");
     match gitlab_issue_state {
         None => Err(ConversionError::new(
             "Unable to map gitlab_issue_state with None to IssueState",
         )),
-        Some(s) => match String::from(s) {
-            closed => Ok(IssueState::Closed),
-            open => Ok(IssueState::Open),
+        Some(s) => {
+            if s == "opened" {
+                Ok(IssueState::Open)
+            } else {
+                Ok(IssueState::Closed)
+            }
         },
     }
 }

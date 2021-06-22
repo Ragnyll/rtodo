@@ -1,5 +1,8 @@
+use std::fmt;
+
 pub mod todo_issues {
     /// A struct representing an issue todo
+    #[derive(Debug)]
     pub struct TodoIssue {
         id: i32,
         project: Project,
@@ -29,6 +32,7 @@ pub mod todo_issues {
         }
     }
 
+    #[derive(Debug)]
     pub struct Project {
         id: i32,
         title: String,
@@ -38,22 +42,28 @@ pub mod todo_issues {
     }
 
     impl Project {
-        pub fn new(id: i32, title: &str, description: Option<String>, web_url: Option<String>, owner: Owner) -> Project {
+        pub fn new(
+            id: i32,
+            title: &str,
+            description: Option<String>,
+            web_url: Option<String>,
+            owner: Owner,
+        ) -> Project {
             Project {
                 id: id,
                 title: String::from(title),
                 description: description,
                 web_url: web_url,
-                owner: owner
+                owner: owner,
             }
         }
     }
 
+    #[derive(Debug)]
     pub struct Owner {
         id: i32,
         owner_type: OwnerType,
     }
-
 
     impl Owner {
         pub fn new(id: i32, owner_type: OwnerType) -> Owner {
@@ -65,20 +75,19 @@ pub mod todo_issues {
     }
 
     // TODO: find other types
+    #[derive(Debug)]
     pub enum OwnerType {
         User,
     }
 
-
     /// The valid states an issue can be in
+    #[derive(Debug)]
     pub enum IssueState {
         Open,
-        InProgress,
-        Blocked,
         Closed,
     }
 
-
+    #[derive(Debug)]
     pub struct User {
         id: i32,
         username: String,

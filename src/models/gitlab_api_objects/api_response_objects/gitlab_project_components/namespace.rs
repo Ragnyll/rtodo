@@ -1,4 +1,4 @@
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct Namespace {
     id: i32,
     name: Option<String>,
@@ -13,9 +13,5 @@ pub struct Namespace {
 impl Namespace {
     pub fn get_id(&self) -> i32 {
         self.id
-    }
-
-    pub fn get_kind(&self) -> &Option<String>  {
-        &self.kind
     }
 }
