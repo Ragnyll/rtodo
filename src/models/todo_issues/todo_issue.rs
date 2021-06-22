@@ -1,4 +1,4 @@
-mod todo_issues {
+pub mod todo_issues {
     /// A struct representing an issue todo
     pub struct TodoIssue {
         id: i32,
@@ -33,10 +33,21 @@ mod todo_issues {
         id: i32,
         title: String,
         description: Option<String>,
-        web_url: String,
+        web_url: Option<String>,
         owner: Owner,
     }
 
+    impl Project {
+        pub fn new(id: i32, title: &str, description: Option<String>, web_url: Option<String>, owner: Owner) -> Project {
+            Project {
+                id: id,
+                title: String::from(title),
+                description: description,
+                web_url: web_url,
+                owner: owner
+            }
+        }
+    }
 
     pub struct Owner {
         id: i32,
@@ -84,6 +95,28 @@ mod todo_issues {
 
     /// A Trait used for any external issue that can convert to a TodoIssue
     pub trait Convertable {
-        fn convertToTodoIssue(&self) -> TodoIssue;
+        fn convert_to_todo_issue(&self) -> Result<TodoIssue, ConversionError>;
+    }
+
+    #[derive(Debug)]
+    pub struct ConversionError {
+        details: String,
+    }
+
+    impl ConversionError {
+        #[allow(dead_code)]
+        pub fn new(msg: &str) -> ConversionError {
+            ConversionError {
+                details: msg.to_string(),
+            }
+        }
+    }
+
+    use std::fmt;
+
+    impl fmt::Display for ConversionError {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            write!(f, "{}", self.details)
+        }
     }
 }
