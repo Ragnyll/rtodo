@@ -17,6 +17,9 @@ mod converters;
 mod conf;
 use conf::conf::Conf;
 
+mod cache_ops;
+use cache_ops::cacher::{read_all_issues_to_mem, read_local_issues_to_mem};
+
 #[tokio::main]
 async fn main() -> Result<()> {
     let conf = Conf::new(None).expect("Unable to construst conf object");
@@ -49,6 +52,9 @@ async fn main() -> Result<()> {
         todos.push(todo);
     }
     println!("{:?}", todos);
+
+    read_all_issues_to_mem(&String::from("whatever")).expect("just build for now");
+    read_local_issues_to_mem(&String::from("whatever")).expect("just build for now");
 
     Ok(())
 }
