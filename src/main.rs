@@ -48,9 +48,7 @@ async fn main() -> Result<()> {
         let todo = gitlab_issue_container.convert_to_todo_issue().expect(&String::from(format!("Unable to convert issue {:?} into a todo", gitlab_issue_container)));
         todos.push(todo);
     }
-
-    todos.pop();
-    println!("{:?}", todos.pop());
+    println!("{:?}", todos);
 
     Ok(())
 }
