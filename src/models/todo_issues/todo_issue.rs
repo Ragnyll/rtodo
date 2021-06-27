@@ -1,14 +1,13 @@
-use std::fmt;
-
 pub mod todo_issues {
     /// A struct representing an issue todo
-    #[derive(Debug)]
+    #[derive(Debug, Serialize, Deserialize)]
     pub struct TodoIssue {
         id: i32,
         project: Project,
         title: String,
         description: Option<String>,
         state: IssueState,
+        source: String,
         assignee: Option<User>,
     }
 
@@ -19,6 +18,7 @@ pub mod todo_issues {
             title: &str,
             description: Option<String>,
             state: IssueState,
+            source: &str,
             assignee: Option<User>,
         ) -> TodoIssue {
             TodoIssue {
@@ -27,12 +27,17 @@ pub mod todo_issues {
                 title: String::from(title),
                 description: description,
                 state: state,
+                source: String::from(source),
                 assignee: assignee,
             }
         }
+
+        pub fn get_source(&self) -> String {
+            self.source
+        }
     }
 
-    #[derive(Debug)]
+    #[derive(Debug, Serialize, Deserialize)]
     pub struct Project {
         id: i32,
         title: String,
@@ -59,7 +64,7 @@ pub mod todo_issues {
         }
     }
 
-    #[derive(Debug)]
+    #[derive(Debug, Serialize, Deserialize)]
     pub struct Owner {
         id: i32,
         owner_type: OwnerType,
@@ -75,19 +80,19 @@ pub mod todo_issues {
     }
 
     // TODO: find other types
-    #[derive(Debug)]
+    #[derive(Debug, Serialize, Deserialize)]
     pub enum OwnerType {
         User,
     }
 
     /// The valid states an issue can be in
-    #[derive(Debug)]
+    #[derive(Debug, Serialize, Deserialize)]
     pub enum IssueState {
         Open,
         Closed,
     }
 
-    #[derive(Debug)]
+    #[derive(Debug, Serialize, Deserialize)]
     pub struct User {
         id: i32,
         username: String,

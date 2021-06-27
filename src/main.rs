@@ -18,11 +18,11 @@ mod conf;
 use conf::conf::Conf;
 
 mod cache_ops;
-use cache_ops::cacher::{read_all_issues_to_mem, read_local_issues_to_mem};
+use cache_ops::cacher::{read_all_issues_to_mem, read_local_issues_to_mem, read_into_mem, write_to_cache_file};
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let conf = Conf::new(None).expect("Unable to construst conf object");
+    let conf = Conf::new(None).expect("Unable to construct conf object");
     let gitlab_api_conf = conf
         .get_gitlab_api_conf()
         .clone()
@@ -51,10 +51,8 @@ async fn main() -> Result<()> {
         let todo = gitlab_issue_container.convert_to_todo_issue().expect(&String::from(format!("Unable to convert issue {:?} into a todo", gitlab_issue_container)));
         todos.push(todo);
     }
-    println!("{:?}", todos);
 
-    read_all_issues_to_mem(&String::from("whatever")).expect("just build for now");
-    read_local_issues_to_mem(&String::from("whatever")).expect("just build for now");
-
+    // write_to_cache_file("/home/ragnyll/.cache/rust-todo.json", todos).expect("Couldnt write to cache file");
+    read_into_mem("/home/ragnyll/.cache/rust-todo.json", None).expect("couldnt read into memory");
     Ok(())
 }

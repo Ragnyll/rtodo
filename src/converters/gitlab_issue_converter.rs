@@ -7,6 +7,8 @@ use crate::models::gitlab_api_objects::api_response_objects::GitlabIssue;
 use crate::models::gitlab_api_objects::api_response_objects::Namespace;
 use crate::models::gitlab_api_objects::api_response_objects::Assignee;
 
+const GITLAB_ISSUE_SOURCE: &str = "GITLAB";
+
 #[derive(Debug)]
 pub struct GitlabIssueContainer {
     gitlab_issue: GitlabIssue,
@@ -58,6 +60,7 @@ impl Convertable for GitlabIssueContainer {
                 )))?,
             self.gitlab_issue.get_description().clone(),
             map_gitlab_issue_state_to_issue_state(self.gitlab_issue.get_state().clone())?,
+            GITLAB_ISSUE_SOURCE,
             assignee,
         ))
     }
