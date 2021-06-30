@@ -10,42 +10,48 @@ pub fn write_to_cache_file(
 ) -> Result<(), CacheWriteError> {
     println!("checking cache path");
     if !std::path::Path::new(cache_path).exists() {
-        println!("cache does not exist. creating.");
         File::create(cache_path)?;
-        println!("cache does not exist. created.");
     }
 
-    println!("writing file");
     Ok(::serde_json::to_writer(
         &File::create(cache_path)?,
         &todo_issues,
     )?)
 }
 
-fn read_into_mem(
-    cache_path: &str,
-    filter: Option<&dyn Fn(Vec<TodoIssue>) -> Result<Vec<TodoIssue>, CacheReadError>>,
-) -> Result<Vec<TodoIssue>, CacheReadError> {
+fn read_into_mem<F>(cache_path: &str, filter: Option<F>) -> Result<Vec<TodoIssue>, CacheReadError>
+where
+    F: Fn(Vec<TodoIssue>) -> Vec<TodoIssue>,
+{
     let todos: Vec<TodoIssue> = serde_json::from_str(&std::fs::read_to_string(cache_path)?)?;
-
-    match filter {
-        Some(f) => f(todos)?,
-        _ => todos,
-    };
-    Ok(vec![])
+    Ok(match filter {
+        Some(f) => f(todos),
+        None => todos,
+    })
 }
 
 pub fn read_local_issues_to_mem(cache_path: &str) -> Result<Vec<TodoIssue>, CacheReadError> {
-    read_into_mem(
+    Ok(read_into_mem(
         cache_path,
-        None,
-    )
-    .expect("wat");
-    Ok(vec![])
+        Some(|todos: Vec<TodoIssue>| -> Vec<TodoIssue> {
+            todos
+                .into_iter()
+                .filter(|t| t.get_source() == "LOCAL")
+                .collect::<Vec<TodoIssue>>()
+        }),
+    ).expect("Unable to read local issues into memory"))
 }
 
 pub fn read_all_issues_to_mem(cache_path: &str) -> Result<Vec<TodoIssue>, CacheReadError> {
-    Ok(read_into_mem(cache_path, None)?)
+    let filtered_todos = read_into_mem(
+        cache_path,
+        // TODO: This is stupid. fix this
+        Some(|todos: Vec<TodoIssue>| -> Vec<TodoIssue> {
+            todos
+        }),
+    )
+    .expect("Unable to read all issues into memory");
+    Ok(filtered_todos)
 }
 
 pub fn insert_into_cache(cache_path: &str, new_issues: TodoIssue) -> Result<(), CacheUpdateError> {

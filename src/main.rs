@@ -18,7 +18,7 @@ mod conf;
 use conf::conf::Conf;
 
 mod cache_ops;
-use cache_ops::cacher::{read_all_issues_to_mem, read_local_issues_to_mem, read_into_mem, write_to_cache_file};
+use cache_ops::cacher::{read_all_issues_to_mem, read_local_issues_to_mem, write_to_cache_file};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -53,6 +53,8 @@ async fn main() -> Result<()> {
     }
 
     // write_to_cache_file("/home/ragnyll/.cache/rust-todo.json", todos).expect("Couldnt write to cache file");
-    read_into_mem("/home/ragnyll/.cache/rust-todo.json", None).expect("couldnt read into memory");
+    let all_issues = read_all_issues_to_mem("/home/ragnyll/.cache/rust-todo.json").expect("couldnt read into memory");
+    println!("{:?}", all_issues);
+
     Ok(())
 }
