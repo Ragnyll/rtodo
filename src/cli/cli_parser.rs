@@ -12,10 +12,11 @@ pub struct CommandConf {
     force_refresh_cache: bool,
     force_no_refresh_cache: bool,
     no_ui: bool,
+    new_todo: Option<NewTodo>,
 }
 
 impl CommandConf {
-    fn new(conf_path: &str, cache_path: &str, force_refresh_cache: bool, force_no_refresh_cache: bool, no_ui: bool) -> Result<Self, CommandLineParseError> {
+    fn new(conf_path: &str, cache_path: &str, force_refresh_cache: bool, force_no_refresh_cache: bool, no_ui: bool, new_todo: Option<NewTodo>) -> Result<Self, CommandLineParseError> {
         if force_refresh_cache && force_no_refresh_cache {
             return Err(CommandLineParseError::new("cache cannot be refreshed in offline mode"));
         }
@@ -25,8 +26,24 @@ impl CommandConf {
             cache_path: String::from(cache_path),
             force_refresh_cache: force_refresh_cache,
             force_no_refresh_cache: force_no_refresh_cache,
-            no_ui: no_ui
+            no_ui: no_ui,
+            new_todo: new_todo
         })
+    }
+}
+
+#[derive(Debug)]
+struct NewTodo {
+    project: String,
+    description: String,
+}
+
+impl NewTodo {
+    fn new(project: &str, description: &str) -> Self {
+        NewTodo {
+            project: String::from(project),
+            description: String::from(description)
+        }
     }
 }
 
@@ -90,7 +107,7 @@ pub fn parse_line() -> CommandConf {
             App::new("new")
             .about("creates a new local issue")
             .arg(
-                Arg::new("Project")
+                Arg::new("project")
                 .required(true)
                 .about("The project to create the todo for")
             )
@@ -106,6 +123,7 @@ pub fn parse_line() -> CommandConf {
     let home_dir = find_home_dir().expect("Unable to determine home dir");
     let absolute_default_conf_path = format!("{}/{}", home_dir, DEFAULT_CONFIG_PATH);
     let absolute_default_cache_path = format!("{}/{}", home_dir, DEFAULT_CACHE_PATH);
+
     CommandConf::new(
         match matches.value_of("config") {
             Some(c) => c,
@@ -127,8 +145,16 @@ pub fn parse_line() -> CommandConf {
             Some(_) => true,
             None => false,
         },
+        match matches.subcommand() {
+            Some(("new", new_matches)) => Some(NewTodo::new(
+                    new_matches.value_of("project").unwrap(),
+                    new_matches.value_of("description").unwrap())),
+            _ => None
+        }
     ).expect("Unable to parse the command line")
 }
+
+
 
 #[derive(Debug)]
 pub struct CommandLineParseError {
