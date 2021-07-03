@@ -14,6 +14,21 @@ pub struct Conf {
     gitlab_api_conf: Option<super::gitlab_api_conf::GitlabApiConf>,
 }
 
+/// Finds the home directory or errors in the process
+fn find_home_dir() -> Result<String, ConfCreationError> {
+    let home_dir: PathBuf = match dirs::home_dir() {
+        Some(p) => p,
+        None => {
+            return Err(ConfCreationError::new("Unable to find home_dir"));
+        }
+    };
+
+    return match home_dir.into_os_string().into_string() {
+        Ok(s) => Ok(s),
+        Err(_) => Err(ConfCreationError::new("Unable to deterimine home_dir path")),
+    };
+}
+
 impl Conf {
     pub fn new(conf_path: Option<String>) -> Result<Conf, ConfCreationError> {
         let home_dir = find_home_dir()?;
@@ -37,20 +52,6 @@ impl Conf {
     }
 }
 
-/// Finds the home directory or errors in the process
-fn find_home_dir() -> Result<String, ConfCreationError> {
-    let home_dir: PathBuf = match dirs::home_dir() {
-        Some(p) => p,
-        None => {
-            return Err(ConfCreationError::new("Unable to find home_dir"));
-        }
-    };
-
-    return match home_dir.into_os_string().into_string() {
-        Ok(s) => Ok(s),
-        Err(_) => Err(ConfCreationError::new("Unable to deterimine home_dir path")),
-    };
-}
 
 #[derive(Debug)]
 pub struct ConfCreationError {
