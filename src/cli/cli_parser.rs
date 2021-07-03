@@ -13,10 +13,11 @@ pub struct CommandConf {
     force_no_refresh_cache: bool,
     no_ui: bool,
     new_todo: Option<NewTodo>,
+    delete_todo: Option<uuid::Uuid>,
 }
 
 impl CommandConf {
-    fn new(conf_path: &str, cache_path: &str, force_refresh_cache: bool, force_no_refresh_cache: bool, no_ui: bool, new_todo: Option<NewTodo>) -> Result<Self, CommandLineParseError> {
+    fn new(conf_path: &str, cache_path: &str, force_refresh_cache: bool, force_no_refresh_cache: bool, no_ui: bool, new_todo: Option<NewTodo>, delete_todo: Option<uuid::Uuid>) -> Result<Self, CommandLineParseError> {
         if force_refresh_cache && force_no_refresh_cache {
             return Err(CommandLineParseError::new("cache cannot be refreshed in offline mode"));
         }
@@ -27,7 +28,8 @@ impl CommandConf {
             force_refresh_cache: force_refresh_cache,
             force_no_refresh_cache: force_no_refresh_cache,
             no_ui: no_ui,
-            new_todo: new_todo
+            new_todo: new_todo,
+            delete_todo: delete_todo
         })
     }
 }
@@ -117,6 +119,15 @@ pub fn parse_line() -> CommandConf {
                 .about("the description of the todo")
             ),
         )
+        .subcommand(
+            App::new("delete")
+            .about("deletes a todo with the given uuid")
+            .arg(
+                Arg::new("uuid")
+                .required(true)
+                .about("the id of the todo to delete")
+            )
+        )
         .get_matches();
 
     // TODO: Im sure theres a more efficient way of doing this default logic
@@ -149,6 +160,10 @@ pub fn parse_line() -> CommandConf {
             Some(("new", new_matches)) => Some(NewTodo::new(
                     new_matches.value_of("project").unwrap(),
                     new_matches.value_of("description").unwrap())),
+            _ => None
+        },
+        match matches.subcommand() {
+            Some(("delete", delete_matches)) => Some(uuid::Uuid::parse_str(delete_matches.value_of("uuid").unwrap()).expect("Invalid Uuid")),
             _ => None
         }
     ).expect("Unable to parse the command line")

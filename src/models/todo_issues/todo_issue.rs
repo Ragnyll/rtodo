@@ -2,7 +2,8 @@ pub mod todo_issues {
     /// A struct representing an issue todo
     #[derive(Debug, Serialize, Deserialize)]
     pub struct TodoIssue {
-        id: i32,
+        uuid: uuid::Uuid,
+        source_id: i32,
         project: Project,
         title: String,
         description: Option<String>,
@@ -13,7 +14,7 @@ pub mod todo_issues {
 
     impl TodoIssue {
         pub fn new(
-            id: i32,
+            source_id: i32,
             project: Project,
             title: &str,
             description: Option<String>,
@@ -22,7 +23,8 @@ pub mod todo_issues {
             assignee: Option<User>,
         ) -> TodoIssue {
             TodoIssue {
-                id: id,
+                uuid: uuid::Uuid::new_v4(),
+                source_id: source_id,
                 project: project,
                 title: String::from(title),
                 description: description,
@@ -39,7 +41,7 @@ pub mod todo_issues {
 
     #[derive(Debug, Serialize, Deserialize)]
     pub struct Project {
-        id: i32,
+        source_id: i32,
         title: String,
         description: Option<String>,
         web_url: Option<String>,
@@ -48,14 +50,14 @@ pub mod todo_issues {
 
     impl Project {
         pub fn new(
-            id: i32,
+            source_id: i32,
             title: &str,
             description: Option<String>,
             web_url: Option<String>,
             owner: Owner,
         ) -> Project {
             Project {
-                id: id,
+                source_id: source_id,
                 title: String::from(title),
                 description: description,
                 web_url: web_url,
