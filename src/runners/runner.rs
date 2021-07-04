@@ -12,7 +12,7 @@ use crate::cache_ops::cacher::CacheWriteError;
 const DEFAULT_REFRESH_TIME_MINUTES: u32 = 300;
 
 /// Runs with the given configuration from the cli
-pub fn run_with_configuration(cli_conf: CommandConf) {
+pub async fn run_with_configuration(cli_conf: CommandConf) -> Result<(), RunError> {
     let conf = Conf::new(&cli_conf.conf_path).expect("Unable to create configuration");
 
     if cli_conf.new_todo.is_some() {
@@ -20,11 +20,12 @@ pub fn run_with_configuration(cli_conf: CommandConf) {
     } else if cli_conf.delete_todo.is_some() {
         println!("Deleting todo")
     } else if cli_conf.no_ui {
-        print_all_todos(cli_conf, conf)
+        print_all_todos(cli_conf, conf).await?;
     } else {
         eprintln!("TUI interface not supported yet");
-        print_all_todos(cli_conf, conf)
     }
+
+    Ok(())
 }
 
 /// TODO: do the time diff check
@@ -85,9 +86,9 @@ async fn update_issues_from_gitlab(conf: Conf, cli_conf: &CommandConf) -> Vec<To
     todos
 }
 
-fn print_all_todos(cli_conf: CommandConf, conf: Conf) {
+async fn print_all_todos(cli_conf: CommandConf, conf: Conf) -> Result<(), CacheWriteError> {
     if should_update_cache(&cli_conf, DEFAULT_REFRESH_TIME_MINUTES) {
-        update_cache_from_remote_issues(conf, &cli_conf);
+        update_cache_from_remote_issues(conf, &cli_conf).await?;
     }
 
     let todos = read_all_issues_to_mem(&cli_conf.cache_path).expect(&format!(
@@ -96,8 +97,10 @@ fn print_all_todos(cli_conf: CommandConf, conf: Conf) {
     ));
 
     for todo in todos {
-        println!("{}", todo)
+        println!("{}", todo);
     }
+
+    Ok(())
 }
 
 #[derive(Debug)]
@@ -110,6 +113,12 @@ impl RunError {
         RunError {
             details: msg.to_string(),
         }
+    }
+}
+
+impl From<CacheWriteError> for RunError {
+    fn from(err: CacheWriteError) -> Self {
+        RunError::new(&err.to_string())
     }
 }
 
