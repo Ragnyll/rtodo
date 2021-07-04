@@ -3,7 +3,7 @@ pub mod todo_issues {
     #[derive(Debug, Serialize, Deserialize)]
     pub struct TodoIssue {
         uuid: uuid::Uuid,
-        source_id: i32,
+        source_id: Option<i32>,
         project: Option<Project>,
         title: String,
         description: Option<String>,
@@ -14,7 +14,7 @@ pub mod todo_issues {
 
     impl TodoIssue {
         pub fn new(
-            source_id: i32,
+            source_id: Option<i32>,
             project: Option<Project>,
             title: &str,
             description: Option<String>,

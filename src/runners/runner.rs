@@ -1,13 +1,12 @@
 use std::fmt;
 
 use crate::cli::cli_parser::CommandConf;
-use crate::cache_ops::cacher::{read_all_issues_to_mem, read_local_issues_to_mem, write_to_cache_file};
+use crate::cache_ops::cacher::{read_all_issues_to_mem, read_local_issues_to_mem, write_to_cache_file, CacheReadError, CacheWriteError};
 use crate::models::gitlab_api_objects::GitlabApiClient;
 use crate::converters::GitlabIssueContainer;
-use crate::models::todo_issue::todo_issues::TodoIssue;
+use crate::models::todo_issue::todo_issues::{TodoIssue, IssueState};
 use crate::conf::conf::Conf;
 use crate::models::todo_issue::todo_issues::Convertable;
-use crate::cache_ops::cacher::CacheWriteError;
 
 const DEFAULT_REFRESH_TIME_MINUTES: u32 = 300;
 
@@ -16,7 +15,7 @@ pub async fn run_with_configuration(cli_conf: CommandConf) -> Result<(), RunErro
     let conf = Conf::new(&cli_conf.conf_path).expect("Unable to create configuration");
 
     if cli_conf.new_todo.is_some() {
-        println!("Creating new todo")
+        create_new_local_todo(&cli_conf)?;
     } else if cli_conf.delete_todo.is_some() {
         println!("Deleting todo")
     } else if cli_conf.no_ui {
@@ -26,6 +25,25 @@ pub async fn run_with_configuration(cli_conf: CommandConf) -> Result<(), RunErro
     }
 
     Ok(())
+}
+
+fn create_new_local_todo(cli_conf: &CommandConf) -> Result<(), RunError> {
+    // Create the new issue from the title and desc
+    let new_issue = TodoIssue::new(
+        None,
+        None,
+        &cli_conf.new_todo.as_ref().unwrap().title,
+        // clone the ref
+        Some(cli_conf.new_todo.as_ref().unwrap().description.clone()),
+        IssueState::Open,
+        &"LOCAL",
+        None);
+    let mut all_todos = read_all_issues_to_mem(&cli_conf.cache_path)?;
+    println!("{}", all_todos.len());
+    println!("NOW PUSH");
+    all_todos.push(new_issue);
+    println!("{}", all_todos.len());
+    Ok(write_to_cache_file(&cli_conf.cache_path, all_todos)?)
 }
 
 /// TODO: do the time diff check
@@ -118,6 +136,12 @@ impl RunError {
 
 impl From<CacheWriteError> for RunError {
     fn from(err: CacheWriteError) -> Self {
+        RunError::new(&err.to_string())
+    }
+}
+
+impl From<CacheReadError> for RunError {
+    fn from(err: CacheReadError) -> Self {
         RunError::new(&err.to_string())
     }
 }

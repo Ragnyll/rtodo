@@ -46,8 +46,8 @@ impl CommandConf {
 
 #[derive(Debug)]
 pub struct NewTodo {
-    title: String,
-    description: String,
+    pub title: String,
+    pub description: String,
 }
 
 impl NewTodo {

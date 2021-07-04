@@ -47,7 +47,7 @@ impl Convertable for GitlabIssueContainer {
             None => None,
         };
         Ok(TodoIssue::new(
-            self.gitlab_issue.get_id(),
+            Some(self.gitlab_issue.get_id()),
             Some(project),
             self.gitlab_issue
                 .get_title()
