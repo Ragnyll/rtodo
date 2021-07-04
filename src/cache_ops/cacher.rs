@@ -1,6 +1,6 @@
 use std::fmt;
 use std::fs::File;
-use crate::todo_issues::TodoIssue;
+use crate::todo_issues::{TodoIssue, IssueState};
 
 /// Writes the Vec<TodoIssue> to the given file at cache_path.
 /// If it does not exist at that path a new file will be created at that location
@@ -58,9 +58,22 @@ pub fn read_all_issues_to_mem(cache_path: &str) -> Result<Vec<TodoIssue>, CacheR
     Ok(filtered_todos)
 }
 
-pub fn insert_into_cache(cache_path: &str, new_issues: TodoIssue) -> Result<(), CacheUpdateError> {
-    let mut todo_issues: Vec<TodoIssue> = read_all_issues_to_mem(cache_path)?;
-    Ok(todo_issues.push(new_issues))
+pub fn read_all_unclosed_issues_to_mem(cache_path: &str) -> Result<Vec<TodoIssue>, CacheReadError> {
+    let filtered_todos = read_into_mem(
+        cache_path,
+        // TODO: This is stupid. fix this
+        Some(|todos: Vec<TodoIssue>| -> Vec<TodoIssue> {
+            todos
+                .into_iter()
+                .filter(|t| match t.get_state() {
+                    IssueState::Closed => false,
+                    _ => true
+                })
+                .collect::<Vec<TodoIssue>>()
+        }),
+    )
+    .expect("Unable to read all issues into memory");
+    Ok(filtered_todos)
 }
 
 #[derive(Debug)]

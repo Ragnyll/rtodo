@@ -37,6 +37,10 @@ pub mod todo_issues {
         pub fn get_source(&self) -> &String {
             &self.source
         }
+
+        pub fn get_state(&self) -> &IssueState {
+            &self.state
+        }
     }
 
     impl fmt::Display for TodoIssue {

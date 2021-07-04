@@ -3,7 +3,7 @@ use std::fmt;
 use crate::cli::cli_parser::CommandConf;
 use crate::cache_ops::cacher::{
     read_all_issues_to_mem, read_local_issues_to_mem, write_to_cache_file, CacheReadError,
-    CacheWriteError,
+    CacheWriteError, read_all_unclosed_issues_to_mem
 };
 use crate::models::gitlab_api_objects::GitlabApiClient;
 use crate::converters::GitlabIssueContainer;
@@ -22,7 +22,7 @@ pub async fn run_with_configuration(cli_conf: CommandConf) -> Result<(), RunErro
     } else if cli_conf.delete_todo.is_some() {
         println!("Deleting todo")
     } else if cli_conf.no_ui {
-        print_all_todos(cli_conf, conf).await?;
+        print_all_unclosed_todos(cli_conf, conf).await?;
     } else {
         eprintln!("TUI interface not supported yet");
     }
@@ -103,6 +103,23 @@ async fn update_issues_from_gitlab(conf: Conf) -> Vec<TodoIssue> {
     }
 
     todos
+}
+
+async fn print_all_unclosed_todos(cli_conf: CommandConf, conf: Conf) -> Result<(), CacheWriteError> {
+    if should_update_cache(&cli_conf, DEFAULT_REFRESH_TIME_MINUTES) {
+        update_cache_from_remote_issues(conf, &cli_conf).await?;
+    }
+
+    let todos = read_all_unclosed_issues_to_mem(&cli_conf.cache_path).expect(&format!(
+        "Could not read cache file {}",
+        cli_conf.cache_path
+    ));
+
+    for todo in todos {
+        println!("{}", todo);
+    }
+
+    Ok(())
 }
 
 async fn print_all_todos(cli_conf: CommandConf, conf: Conf) -> Result<(), CacheWriteError> {
