@@ -41,11 +41,12 @@ pub mod todo_issues {
 
     impl fmt::Display for TodoIssue {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-                writeln!(f, "========================");
-                writeln!(f, "Title: {}", self.title);
+                writeln!(f, "========================")?;
+                writeln!(f, "Title: {}", self.title)?;
                 if self.description.is_some() {
-                    writeln!(f, "Description: {}", self.description.as_ref().unwrap_or(&String::from("No description available")));
+                    writeln!(f, "Description: {}", self.description.as_ref().unwrap_or(&String::from("No description available")))?;
                 }
+                writeln!(f, "Source: {}", self.source)?;
                 writeln!(f, "========================")
         }
     }

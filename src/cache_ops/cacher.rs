@@ -8,7 +8,6 @@ pub fn write_to_cache_file(
     cache_path: &str,
     todo_issues: Vec<TodoIssue>,
 ) -> Result<(), CacheWriteError> {
-    println!("checking cache path");
     if !std::path::Path::new(cache_path).exists() {
         File::create(cache_path)?;
     }
