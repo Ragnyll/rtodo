@@ -7,19 +7,29 @@ const DEFAULT_CACHE_PATH: &str = &".cache/rust-todo.json";
 
 #[derive(Debug)]
 pub struct CommandConf {
-    conf_path: String,
-    cache_path: String,
-    force_refresh_cache: bool,
-    force_no_refresh_cache: bool,
-    no_ui: bool,
-    new_todo: Option<NewTodo>,
-    delete_todo: Option<uuid::Uuid>,
+    pub conf_path: String,
+    pub cache_path: String,
+    pub force_refresh_cache: bool,
+    pub force_no_refresh_cache: bool,
+    pub no_ui: bool,
+    pub new_todo: Option<NewTodo>,
+    pub delete_todo: Option<uuid::Uuid>,
 }
 
 impl CommandConf {
-    fn new(conf_path: &str, cache_path: &str, force_refresh_cache: bool, force_no_refresh_cache: bool, no_ui: bool, new_todo: Option<NewTodo>, delete_todo: Option<uuid::Uuid>) -> Result<Self, CommandLineParseError> {
+    fn new(
+        conf_path: &str,
+        cache_path: &str,
+        force_refresh_cache: bool,
+        force_no_refresh_cache: bool,
+        no_ui: bool,
+        new_todo: Option<NewTodo>,
+        delete_todo: Option<uuid::Uuid>,
+    ) -> Result<Self, CommandLineParseError> {
         if force_refresh_cache && force_no_refresh_cache {
-            return Err(CommandLineParseError::new("cache cannot be refreshed in offline mode"));
+            return Err(CommandLineParseError::new(
+                "cache cannot be refreshed in offline mode",
+            ));
         }
 
         Ok(CommandConf {
@@ -29,22 +39,22 @@ impl CommandConf {
             force_no_refresh_cache: force_no_refresh_cache,
             no_ui: no_ui,
             new_todo: new_todo,
-            delete_todo: delete_todo
+            delete_todo: delete_todo,
         })
     }
 }
 
 #[derive(Debug)]
-struct NewTodo {
-    project: String,
+pub struct NewTodo {
+    title: String,
     description: String,
 }
 
 impl NewTodo {
     fn new(project: &str, description: &str) -> Self {
         NewTodo {
-            project: String::from(project),
-            description: String::from(description)
+            title: String::from(project),
+            description: String::from(description),
         }
     }
 }
@@ -60,7 +70,9 @@ fn find_home_dir() -> Result<String, CommandLineParseError> {
 
     return match home_dir.into_os_string().into_string() {
         Ok(s) => Ok(s),
-        Err(_) => Err(CommandLineParseError::new("Unable to deterimine home_dir path")),
+        Err(_) => Err(CommandLineParseError::new(
+            "Unable to deterimine home_dir path",
+        )),
     };
 }
 
@@ -71,62 +83,61 @@ pub fn parse_line() -> CommandConf {
         .about("manages todos and issues across disparate sources")
         .arg(
             Arg::new("config")
-            .short('c')
-            .long("config")
-            .value_name("FILE")
-            .about("The path to a custom config file")
-            .takes_value(true),
+                .short('c')
+                .long("config")
+                .value_name("FILE")
+                .about("The path to a custom config file")
+                .takes_value(true),
         )
         .arg(
             Arg::new("cache-file")
-            .short('f')
-            .long("cache-file")
-            .value_name("FILE")
-            .about("The path of the cache-file to read and write from")
-            .takes_value(true),
+                .short('f')
+                .long("cache-file")
+                .value_name("FILE")
+                .about("The path of the cache-file to read and write from")
+                .takes_value(true),
         )
         .arg(
             Arg::new("refresh-cache")
-            .short('r')
-            .long("refresh-cache")
-            .about("forces a refresh of the non-local issues in the cache")
-            .takes_value(false),
+                .short('r')
+                .long("refresh-cache")
+                .about("forces a refresh of the non-local issues in the cache")
+                .takes_value(false),
         )
         .arg(
             Arg::new("offline")
-            .short('o')
-            .long("offline")
-            .about("do not refresh non-local issues in the cache")
-            .takes_value(false),
+                .short('o')
+                .long("offline")
+                .about("do not refresh non-local issues in the cache")
+                .takes_value(false),
         )
         .arg(
             Arg::new("no-ui")
-            .long("no-ui")
-            .about("just dump the cache file to stdout")
-            .takes_value(false),
+                .long("no-ui")
+                .about("just dump the cache file to stdout")
         )
         .subcommand(
             App::new("new")
-            .about("creates a new local issue")
-            .arg(
-                Arg::new("project")
-                .required(true)
-                .about("The project to create the todo for")
-            )
-            .arg(
-                Arg::new("description")
-                .required(true)
-                .about("the description of the todo")
-            ),
+                .about("creates a new local issue")
+                .arg(
+                    Arg::new("project")
+                        .required(true)
+                        .about("The project to create the todo for"),
+                )
+                .arg(
+                    Arg::new("description")
+                        .required(true)
+                        .about("the description of the todo"),
+                ),
         )
         .subcommand(
             App::new("delete")
-            .about("deletes a todo with the given uuid")
-            .arg(
-                Arg::new("uuid")
-                .required(true)
-                .about("the id of the todo to delete")
-            )
+                .about("deletes a todo with the given uuid")
+                .arg(
+                    Arg::new("uuid")
+                        .required(true)
+                        .about("the id of the todo to delete"),
+                ),
         )
         .get_matches();
 
@@ -135,6 +146,7 @@ pub fn parse_line() -> CommandConf {
     let absolute_default_conf_path = format!("{}/{}", home_dir, DEFAULT_CONFIG_PATH);
     let absolute_default_cache_path = format!("{}/{}", home_dir, DEFAULT_CACHE_PATH);
 
+
     CommandConf::new(
         match matches.value_of("config") {
             Some(c) => c,
@@ -142,34 +154,34 @@ pub fn parse_line() -> CommandConf {
         },
         match matches.value_of("cache-file") {
             Some(c) => c,
-            None => &absolute_default_cache_path
+            None => &absolute_default_cache_path,
         },
         match matches.value_of("refresh-cache") {
             Some(_) => true,
-            None => false
+            None => false,
         },
         match matches.value_of("offline") {
             Some(_) => true,
             None => false,
         },
-        match matches.value_of("no-ui") {
-            Some(_) => true,
-            None => false,
-        },
+        matches.is_present("no-ui"),
         match matches.subcommand() {
             Some(("new", new_matches)) => Some(NewTodo::new(
-                    new_matches.value_of("project").unwrap(),
-                    new_matches.value_of("description").unwrap())),
-            _ => None
+                new_matches.value_of("project").unwrap(),
+                new_matches.value_of("description").unwrap(),
+            )),
+            _ => None,
         },
         match matches.subcommand() {
-            Some(("delete", delete_matches)) => Some(uuid::Uuid::parse_str(delete_matches.value_of("uuid").unwrap()).expect("Invalid Uuid")),
-            _ => None
-        }
-    ).expect("Unable to parse the command line")
+            Some(("delete", delete_matches)) => Some(
+                uuid::Uuid::parse_str(delete_matches.value_of("uuid").unwrap())
+                    .expect("Invalid Uuid"),
+            ),
+            _ => None,
+        },
+    )
+    .expect("Unable to parse the command line")
 }
-
-
 
 #[derive(Debug)]
 pub struct CommandLineParseError {

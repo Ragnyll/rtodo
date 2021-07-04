@@ -23,6 +23,11 @@ fn read_into_mem<F>(cache_path: &str, filter: Option<F>) -> Result<Vec<TodoIssue
 where
     F: Fn(Vec<TodoIssue>) -> Vec<TodoIssue>,
 {
+    if !std::path::Path::new(cache_path).exists() {
+        File::create(cache_path)?;
+        return Ok(vec!());
+    }
+
     let todos: Vec<TodoIssue> = serde_json::from_str(&std::fs::read_to_string(cache_path)?)?;
     Ok(match filter {
         Some(f) => f(todos),

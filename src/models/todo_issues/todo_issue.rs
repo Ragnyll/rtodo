@@ -4,7 +4,7 @@ pub mod todo_issues {
     pub struct TodoIssue {
         uuid: uuid::Uuid,
         source_id: i32,
-        project: Project,
+        project: Option<Project>,
         title: String,
         description: Option<String>,
         state: IssueState,
@@ -15,7 +15,7 @@ pub mod todo_issues {
     impl TodoIssue {
         pub fn new(
             source_id: i32,
-            project: Project,
+            project: Option<Project>,
             title: &str,
             description: Option<String>,
             state: IssueState,
@@ -36,6 +36,17 @@ pub mod todo_issues {
 
         pub fn get_source(&self) -> &String {
             &self.source
+        }
+    }
+
+    impl fmt::Display for TodoIssue {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                writeln!(f, "========================");
+                writeln!(f, "Title: {}", self.title);
+                if self.description.is_some() {
+                    writeln!(f, "Description: {}", self.description.as_ref().unwrap_or(&String::from("No description available")));
+                }
+                writeln!(f, "========================")
         }
     }
 
@@ -63,6 +74,12 @@ pub mod todo_issues {
                 web_url: web_url,
                 owner: owner,
             }
+        }
+    }
+
+    impl fmt::Display for Project {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            write!(f, "Project Title: {}", self.title)
         }
     }
 

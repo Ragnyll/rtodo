@@ -50,7 +50,7 @@ impl Convertable for GitlabIssueContainer {
         };
         Ok(TodoIssue::new(
             self.gitlab_issue.get_id(),
-            project,
+            Some(project),
             self.gitlab_issue
                 .get_title()
                 .as_ref()
