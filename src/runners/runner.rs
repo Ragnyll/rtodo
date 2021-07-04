@@ -1,7 +1,10 @@
 use std::fmt;
 
 use crate::cli::cli_parser::CommandConf;
-use crate::cache_ops::cacher::{read_all_issues_to_mem, read_local_issues_to_mem, write_to_cache_file, CacheReadError, CacheWriteError};
+use crate::cache_ops::cacher::{
+    read_all_issues_to_mem, read_local_issues_to_mem, write_to_cache_file, CacheReadError,
+    CacheWriteError,
+};
 use crate::models::gitlab_api_objects::GitlabApiClient;
 use crate::converters::GitlabIssueContainer;
 use crate::models::todo_issue::todo_issues::{TodoIssue, IssueState};
@@ -37,7 +40,8 @@ fn create_new_local_todo(cli_conf: &CommandConf) -> Result<(), RunError> {
         Some(cli_conf.new_todo.as_ref().unwrap().description.clone()),
         IssueState::Open,
         &"LOCAL",
-        None);
+        None,
+    );
     let mut all_todos = read_all_issues_to_mem(&cli_conf.cache_path)?;
     println!("{}", all_todos.len());
     println!("NOW PUSH");
@@ -58,12 +62,12 @@ async fn update_cache_from_remote_issues(
     let mut all_issues: Vec<TodoIssue> = read_local_issues_to_mem(&cli_conf.cache_path)
         .expect("Unable to read local issues into memory");
 
-    all_issues.append(&mut update_issues_from_gitlab(conf, &cli_conf).await);
+    all_issues.append(&mut update_issues_from_gitlab(conf).await);
 
     write_to_cache_file(&cli_conf.cache_path, all_issues)
 }
 
-async fn update_issues_from_gitlab(conf: Conf, cli_conf: &CommandConf) -> Vec<TodoIssue> {
+async fn update_issues_from_gitlab(conf: Conf) -> Vec<TodoIssue> {
     let gitlab_api_conf = conf
         .get_gitlab_api_conf()
         .clone()
@@ -84,10 +88,7 @@ async fn update_issues_from_gitlab(conf: Conf, cli_conf: &CommandConf) -> Vec<To
         .await
         .expect("Unable to get issues_assigned_to_user");
 
-    let mut todos = read_local_issues_to_mem(&cli_conf.cache_path).expect(&format!(
-        "Could not read cache file {}",
-        cli_conf.cache_path
-    ));
+    let mut todos: Vec<TodoIssue> = vec![];
     for issue in issues_assigned_to_user {
         // TODO: DEFECT user projects does not account for projects not owned by user_id
         // TODO: clone is unnessecarily expensive. just figure out the lifetime

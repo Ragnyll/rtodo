@@ -47,6 +47,7 @@ pub mod todo_issues {
                     writeln!(f, "Description: {}", self.description.as_ref().unwrap_or(&String::from("No description available")))?;
                 }
                 writeln!(f, "Source: {}", self.source)?;
+                writeln!(f, "UUID: {}", self.uuid)?;
                 writeln!(f, "========================")
         }
     }
