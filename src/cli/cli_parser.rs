@@ -3,7 +3,7 @@ use std::fmt;
 use std::path::PathBuf;
 
 const DEFAULT_CONFIG_PATH: &str = &".config/rtodo/conf.json";
-const DEFAULT_CACHE_PATH: &str = &".cache/rust-todo.json";
+const DEFAULT_CACHE_PATH: &str = &".cache/rtodo.json";
 
 #[derive(Debug)]
 pub struct CommandConf {

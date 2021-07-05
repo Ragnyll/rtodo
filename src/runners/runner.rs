@@ -27,7 +27,7 @@ pub async fn run_with_configuration(cli_conf: CommandConf) -> Result<(), RunErro
     } else if cli_conf.no_ui {
         print_all_unclosed_todos(cli_conf, conf).await?;
     } else {
-        eprintln!("TUI interface not supported yet");
+        print_all_unclosed_todos(cli_conf, conf).await?;
     }
 
     Ok(())
