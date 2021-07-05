@@ -72,14 +72,6 @@ impl GitlabIssue {
         &self.state
     }
 
-    pub fn get_created_at(&self) -> &Option<String> {
-        &self.created_at
-    }
-
-    pub fn get_updated_at(&self) -> &Option<String> {
-        &self.updated_at
-    }
-
     pub fn get_web_url(&self) -> &Option<String> {
         &self.web_url
     }

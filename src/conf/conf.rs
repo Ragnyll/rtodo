@@ -3,8 +3,6 @@ use std::io::Read;
 use std::fmt;
 use std::fs::File;
 
-const DEFAULT_CONF_PATH: &str = ".config/rtodo/conf.json";
-
 /// Master conf containing all the individual conf objects and utilities for building them
 #[derive(Clone, Debug, Deserialize)]
 pub struct Conf {

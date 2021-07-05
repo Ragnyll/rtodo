@@ -72,6 +72,7 @@ impl GitlabApiClient {
     }
 
     /// Returns a list of project id belonging to user_id
+    #[allow(dead_code)]
     pub async fn get_gitlab_user(&self, user_id: &str) -> Result<GitlabUser, ClientResponseError> {
         let url = format!("{}/users/{}", self.conf.get_base_url(), user_id);
 

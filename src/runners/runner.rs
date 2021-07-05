@@ -17,7 +17,7 @@ use crate::models::todo_issue::todo_issues::Convertable;
 const DEFAULT_CACHE_REFRESH_TIME: u16 = 7200; // Cache will refresh every 2 hours
 
 /// Runs with the given configuration from the cli
-pub async fn run_with_configuration(cli_conf: CommandConf) -> Result<(), RunError> {
+pub fn run_with_configuration(cli_conf: CommandConf) -> Result<(), RunError> {
     let conf = Conf::new(&cli_conf.conf_path).expect("Unable to create configuration");
 
     if cli_conf.new_todo.is_some() {
@@ -25,9 +25,9 @@ pub async fn run_with_configuration(cli_conf: CommandConf) -> Result<(), RunErro
     } else if cli_conf.close_todo.is_some() {
         close_todo(&cli_conf)?;
     } else if cli_conf.no_ui {
-        print_all_unclosed_todos(cli_conf, conf).await?;
+        print_all_unclosed_todos(cli_conf, conf).expect("Unable to print all unclosed issues");
     } else {
-        print_all_unclosed_todos(cli_conf, conf).await?;
+        print_all_unclosed_todos(cli_conf, conf).expect("Unable to print all unclosed issues");
     }
 
     Ok(())
@@ -93,14 +93,21 @@ fn should_update_cache(conf: &CommandConf) -> bool {
         >= DEFAULT_CACHE_REFRESH_TIME.into()
 }
 
-async fn update_cache_from_remote_issues(
+fn update_cache_from_remote_issues(
     conf: Conf,
     cli_conf: &CommandConf,
 ) -> Result<(), CacheWriteError> {
     let mut all_issues: Vec<TodoIssue> = read_local_issues_to_mem(&cli_conf.cache_path)
         .expect("Unable to read local issues into memory");
 
-    all_issues.append(&mut update_issues_from_gitlab(conf).await);
+
+    tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()
+        .unwrap()
+        .block_on(async {
+            all_issues.append(&mut update_issues_from_gitlab(conf).await);
+        });
 
     write_to_cache_file(&cli_conf.cache_path, all_issues)
 }
@@ -143,12 +150,12 @@ async fn update_issues_from_gitlab(conf: Conf) -> Vec<TodoIssue> {
     todos
 }
 
-async fn print_all_unclosed_todos(
+fn print_all_unclosed_todos(
     cli_conf: CommandConf,
     conf: Conf,
 ) -> Result<(), CacheWriteError> {
     if should_update_cache(&cli_conf) {
-        update_cache_from_remote_issues(conf, &cli_conf).await?;
+        update_cache_from_remote_issues(conf, &cli_conf).expect("Unable to update cache from remote issues");
     }
 
     let todos = read_all_unclosed_issues_to_mem(&cli_conf.cache_path).expect(&format!(
@@ -164,9 +171,9 @@ async fn print_all_unclosed_todos(
 }
 
 #[allow(dead_code)]
-async fn print_all_todos(cli_conf: CommandConf, conf: Conf) -> Result<(), CacheWriteError> {
+fn print_all_todos(cli_conf: CommandConf, conf: Conf) -> Result<(), CacheWriteError> {
     if should_update_cache(&cli_conf) {
-        update_cache_from_remote_issues(conf, &cli_conf).await?;
+        update_cache_from_remote_issues(conf, &cli_conf).expect("Unable to update cache from remote issues");
     }
 
     let todos = read_all_issues_to_mem(&cli_conf.cache_path).expect(&format!(
