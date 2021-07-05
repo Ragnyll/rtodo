@@ -114,7 +114,7 @@ pub fn parse_line() -> CommandConf {
         .arg(
             Arg::new("no-ui")
                 .long("no-ui")
-                .about("just dump the cache file to stdout")
+                .about("just dump the cache file to stdout"),
         )
         .subcommand(
             App::new("new")
@@ -132,7 +132,9 @@ pub fn parse_line() -> CommandConf {
         )
         .subcommand(
             App::new("close")
-                .about("close a todo with the given uuid. NOTE: Closes on remote issue do not sync.")
+                .about(
+                    "close a todo with the given uuid. NOTE: Closes on remote issue do not sync.",
+                )
                 .arg(
                     Arg::new("uuid")
                         .required(true)
@@ -145,7 +147,6 @@ pub fn parse_line() -> CommandConf {
     let home_dir = find_home_dir().expect("Unable to determine home dir");
     let absolute_default_conf_path = format!("{}/{}", home_dir, DEFAULT_CONFIG_PATH);
     let absolute_default_cache_path = format!("{}/{}", home_dir, DEFAULT_CACHE_PATH);
-
 
     CommandConf::new(
         match matches.value_of("config") {

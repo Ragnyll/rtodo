@@ -1,6 +1,6 @@
 use std::fmt;
 use std::fs::metadata;
-use std::time::{Duration, SystemTime};
+use std::time::SystemTime;
 
 use crate::cli::cli_parser::CommandConf;
 use crate::cache_ops::cacher::{

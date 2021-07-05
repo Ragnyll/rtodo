@@ -28,7 +28,6 @@ impl GitlabUser {
         self.id
     }
 
-
     pub fn get_username(&self) -> &Option<String> {
         &self.username
     }

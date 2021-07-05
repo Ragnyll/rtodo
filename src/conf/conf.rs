@@ -28,7 +28,6 @@ impl Conf {
     }
 }
 
-
 #[derive(Debug)]
 pub struct ConfCreationError {
     details: String,

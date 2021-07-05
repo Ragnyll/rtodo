@@ -14,10 +14,13 @@ pub struct GitlabIssueContainer {
 }
 
 impl GitlabIssueContainer {
-    pub fn new(gitlab_issue: GitlabIssue, gitlab_projects: Vec<GitlabProject>) -> GitlabIssueContainer {
+    pub fn new(
+        gitlab_issue: GitlabIssue,
+        gitlab_projects: Vec<GitlabProject>,
+    ) -> GitlabIssueContainer {
         GitlabIssueContainer {
             gitlab_issue: gitlab_issue,
-            gitlab_projects: gitlab_projects
+            gitlab_projects: gitlab_projects,
         }
     }
 }
@@ -58,7 +61,10 @@ impl Convertable for GitlabIssueContainer {
                 )))?,
             self.gitlab_issue.get_description().clone(),
             map_gitlab_issue_state_to_issue_state(self.gitlab_issue.get_state().clone())?,
-            self.gitlab_issue.get_web_url().as_ref().unwrap_or(&String::from("GITLAB")),
+            self.gitlab_issue
+                .get_web_url()
+                .as_ref()
+                .unwrap_or(&String::from("GITLAB")),
             assignee,
         ))
     }
@@ -77,7 +83,7 @@ fn map_gitlab_issue_state_to_issue_state(
             } else {
                 Ok(IssueState::Closed)
             }
-        },
+        }
     }
 }
 

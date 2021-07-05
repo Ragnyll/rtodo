@@ -24,7 +24,7 @@ where
 {
     if !std::path::Path::new(cache_path).exists() {
         File::create(cache_path)?;
-        return Ok(vec!());
+        return Ok(vec![]);
     }
 
     let todos: Vec<TodoIssue> = serde_json::from_str(&std::fs::read_to_string(cache_path)?)?;
@@ -34,20 +34,26 @@ where
     })
 }
 
-pub fn read_all_unclosed_issues_into_mem_excluding_uuid(cache_path: &str, uuid: uuid::Uuid) -> Result<Vec<TodoIssue>, CacheReadError> {
+pub fn read_all_unclosed_issues_into_mem_excluding_uuid(
+    cache_path: &str,
+    uuid: uuid::Uuid,
+) -> Result<Vec<TodoIssue>, CacheReadError> {
     Ok(read_into_mem(
         cache_path,
         Some(|todos: Vec<TodoIssue>| -> Vec<TodoIssue> {
             todos
                 .into_iter()
-                .filter(|t| *t.get_uuid() != uuid &&
-                    match t.get_state() {
-                    IssueState::Closed => false,
-                    _ => true
+                .filter(|t| {
+                    *t.get_uuid() != uuid
+                        && match t.get_state() {
+                            IssueState::Closed => false,
+                            _ => true,
+                        }
                 })
                 .collect::<Vec<TodoIssue>>()
         }),
-    ).expect("Unable to read local issues into memory"))
+    )
+    .expect("Unable to read local issues into memory"))
 }
 
 pub fn read_local_issues_to_mem(cache_path: &str) -> Result<Vec<TodoIssue>, CacheReadError> {
@@ -59,16 +65,15 @@ pub fn read_local_issues_to_mem(cache_path: &str) -> Result<Vec<TodoIssue>, Cach
                 .filter(|t| t.get_source() == "LOCAL")
                 .collect::<Vec<TodoIssue>>()
         }),
-    ).expect("Unable to read local issues into memory"))
+    )
+    .expect("Unable to read local issues into memory"))
 }
 
 pub fn read_all_issues_to_mem(cache_path: &str) -> Result<Vec<TodoIssue>, CacheReadError> {
     let filtered_todos = read_into_mem(
         cache_path,
         // TODO: This is stupid. fix this
-        Some(|todos: Vec<TodoIssue>| -> Vec<TodoIssue> {
-            todos
-        }),
+        Some(|todos: Vec<TodoIssue>| -> Vec<TodoIssue> { todos }),
     )
     .expect("Unable to read all issues into memory");
     Ok(filtered_todos)
@@ -83,7 +88,7 @@ pub fn read_all_unclosed_issues_to_mem(cache_path: &str) -> Result<Vec<TodoIssue
                 .into_iter()
                 .filter(|t| match t.get_state() {
                     IssueState::Closed => false,
-                    _ => true
+                    _ => true,
                 })
                 .collect::<Vec<TodoIssue>>()
         }),
