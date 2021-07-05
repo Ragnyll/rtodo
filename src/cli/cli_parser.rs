@@ -13,7 +13,7 @@ pub struct CommandConf {
     pub force_no_refresh_cache: bool,
     pub no_ui: bool,
     pub new_todo: Option<NewTodo>,
-    pub delete_todo: Option<uuid::Uuid>,
+    pub close_todo: Option<uuid::Uuid>,
 }
 
 impl CommandConf {
@@ -24,7 +24,7 @@ impl CommandConf {
         force_no_refresh_cache: bool,
         no_ui: bool,
         new_todo: Option<NewTodo>,
-        delete_todo: Option<uuid::Uuid>,
+        close_todo: Option<uuid::Uuid>,
     ) -> Result<Self, CommandLineParseError> {
         if force_refresh_cache && force_no_refresh_cache {
             return Err(CommandLineParseError::new(
@@ -39,7 +39,7 @@ impl CommandConf {
             force_no_refresh_cache: force_no_refresh_cache,
             no_ui: no_ui,
             new_todo: new_todo,
-            delete_todo: delete_todo,
+            close_todo: close_todo,
         })
     }
 }
@@ -131,12 +131,12 @@ pub fn parse_line() -> CommandConf {
                 ),
         )
         .subcommand(
-            App::new("delete")
-                .about("deletes a todo with the given uuid")
+            App::new("close")
+                .about("close a todo with the given uuid. NOTE: Closes on remote issue do not sync.")
                 .arg(
                     Arg::new("uuid")
                         .required(true)
-                        .about("the id of the todo to delete"),
+                        .about("the id of the todo to close"),
                 ),
         )
         .get_matches();
@@ -173,7 +173,7 @@ pub fn parse_line() -> CommandConf {
             _ => None,
         },
         match matches.subcommand() {
-            Some(("delete", delete_matches)) => Some(
+            Some(("close", delete_matches)) => Some(
                 uuid::Uuid::parse_str(delete_matches.value_of("uuid").unwrap())
                     .expect("Invalid Uuid"),
             ),

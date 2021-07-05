@@ -41,6 +41,10 @@ pub mod todo_issues {
         pub fn get_state(&self) -> &IssueState {
             &self.state
         }
+
+        pub fn get_uuid(&self) -> &uuid::Uuid {
+            &self.uuid
+        }
     }
 
     impl fmt::Display for TodoIssue {

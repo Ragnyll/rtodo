@@ -3,7 +3,7 @@ use std::fmt;
 use crate::cli::cli_parser::CommandConf;
 use crate::cache_ops::cacher::{
     read_all_issues_to_mem, read_local_issues_to_mem, write_to_cache_file, CacheReadError,
-    CacheWriteError, read_all_unclosed_issues_to_mem
+    CacheWriteError, read_all_unclosed_issues_to_mem, read_all_unclosed_issues_into_mem_excluding_uuid
 };
 use crate::models::gitlab_api_objects::GitlabApiClient;
 use crate::converters::GitlabIssueContainer;
@@ -19,8 +19,8 @@ pub async fn run_with_configuration(cli_conf: CommandConf) -> Result<(), RunErro
 
     if cli_conf.new_todo.is_some() {
         create_new_local_todo(&cli_conf)?;
-    } else if cli_conf.delete_todo.is_some() {
-        println!("Deleting todo")
+    } else if cli_conf.close_todo.is_some() {
+        close_todo(&cli_conf)?;
     } else if cli_conf.no_ui {
         print_all_unclosed_todos(cli_conf, conf).await?;
     } else {
@@ -28,6 +28,17 @@ pub async fn run_with_configuration(cli_conf: CommandConf) -> Result<(), RunErro
     }
 
     Ok(())
+}
+
+fn close_todo(cli_conf: &CommandConf) -> Result<(), RunError> {
+    // close_todo.unwrap should not error becasue the only path it is called from forces it to be
+    // some
+    let todos = read_all_unclosed_issues_into_mem_excluding_uuid(&cli_conf.cache_path, cli_conf.close_todo.unwrap()).expect(&format!(
+        "Could not read cache file {}",
+        cli_conf.cache_path
+    ));
+
+    Ok(write_to_cache_file(&cli_conf.cache_path, todos)?)
 }
 
 fn create_new_local_todo(cli_conf: &CommandConf) -> Result<(), RunError> {
@@ -122,6 +133,7 @@ async fn print_all_unclosed_todos(cli_conf: CommandConf, conf: Conf) -> Result<(
     Ok(())
 }
 
+#[allow(dead_code)]
 async fn print_all_todos(cli_conf: CommandConf, conf: Conf) -> Result<(), CacheWriteError> {
     if should_update_cache(&cli_conf, DEFAULT_REFRESH_TIME_MINUTES) {
         update_cache_from_remote_issues(conf, &cli_conf).await?;

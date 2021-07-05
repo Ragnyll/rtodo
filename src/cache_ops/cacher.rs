@@ -34,6 +34,22 @@ where
     })
 }
 
+pub fn read_all_unclosed_issues_into_mem_excluding_uuid(cache_path: &str, uuid: uuid::Uuid) -> Result<Vec<TodoIssue>, CacheReadError> {
+    Ok(read_into_mem(
+        cache_path,
+        Some(|todos: Vec<TodoIssue>| -> Vec<TodoIssue> {
+            todos
+                .into_iter()
+                .filter(|t| *t.get_uuid() != uuid &&
+                    match t.get_state() {
+                    IssueState::Closed => false,
+                    _ => true
+                })
+                .collect::<Vec<TodoIssue>>()
+        }),
+    ).expect("Unable to read local issues into memory"))
+}
+
 pub fn read_local_issues_to_mem(cache_path: &str) -> Result<Vec<TodoIssue>, CacheReadError> {
     Ok(read_into_mem(
         cache_path,
