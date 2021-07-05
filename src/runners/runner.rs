@@ -1,9 +1,12 @@
 use std::fmt;
+use std::fs::metadata;
+use std::time::{Duration, SystemTime};
 
 use crate::cli::cli_parser::CommandConf;
 use crate::cache_ops::cacher::{
     read_all_issues_to_mem, read_local_issues_to_mem, write_to_cache_file, CacheReadError,
-    CacheWriteError, read_all_unclosed_issues_to_mem, read_all_unclosed_issues_into_mem_excluding_uuid
+    CacheWriteError, read_all_unclosed_issues_to_mem,
+    read_all_unclosed_issues_into_mem_excluding_uuid,
 };
 use crate::models::gitlab_api_objects::GitlabApiClient;
 use crate::converters::GitlabIssueContainer;
@@ -11,7 +14,7 @@ use crate::models::todo_issue::todo_issues::{TodoIssue, IssueState};
 use crate::conf::conf::Conf;
 use crate::models::todo_issue::todo_issues::Convertable;
 
-const DEFAULT_REFRESH_TIME_MINUTES: u32 = 300;
+const DEFAULT_CACHE_REFRESH_TIME: u16 = 7200; // Cache will refresh every 2 hours
 
 /// Runs with the given configuration from the cli
 pub async fn run_with_configuration(cli_conf: CommandConf) -> Result<(), RunError> {
@@ -33,7 +36,11 @@ pub async fn run_with_configuration(cli_conf: CommandConf) -> Result<(), RunErro
 fn close_todo(cli_conf: &CommandConf) -> Result<(), RunError> {
     // close_todo.unwrap should not error becasue the only path it is called from forces it to be
     // some
-    let todos = read_all_unclosed_issues_into_mem_excluding_uuid(&cli_conf.cache_path, cli_conf.close_todo.unwrap()).expect(&format!(
+    let todos = read_all_unclosed_issues_into_mem_excluding_uuid(
+        &cli_conf.cache_path,
+        cli_conf.close_todo.unwrap(),
+    )
+    .expect(&format!(
         "Could not read cache file {}",
         cli_conf.cache_path
     ));
@@ -54,16 +61,33 @@ fn create_new_local_todo(cli_conf: &CommandConf) -> Result<(), RunError> {
         None,
     );
     let mut all_todos = read_all_issues_to_mem(&cli_conf.cache_path)?;
-    println!("{}", all_todos.len());
-    println!("NOW PUSH");
     all_todos.push(new_issue);
-    println!("{}", all_todos.len());
     Ok(write_to_cache_file(&cli_conf.cache_path, all_todos)?)
 }
 
-/// TODO: do the time diff check
-fn should_update_cache(conf: &CommandConf, refresh_time_min: u32) -> bool {
-    true
+fn should_update_cache(conf: &CommandConf) -> bool {
+    if conf.force_refresh_cache {
+        return true;
+    }
+
+    // NOTE: not monotonic, but should be accurate enough for a refresh every few hours
+    let now = SystemTime::now();
+
+    let cache_modified_time = metadata(&conf.cache_path)
+        .expect(&format!(
+            "Unable to read metadata on cache file {}",
+            &conf.cache_path
+        ))
+        .modified()
+        .expect(&format!(
+            "Unable to read modified time on cache file {}",
+            &conf.cache_path
+        ));
+
+    now.duration_since(cache_modified_time)
+        .expect("Unable to determine whether to update cache")
+        .as_secs()
+        >= DEFAULT_CACHE_REFRESH_TIME.into()
 }
 
 async fn update_cache_from_remote_issues(
@@ -116,8 +140,11 @@ async fn update_issues_from_gitlab(conf: Conf) -> Vec<TodoIssue> {
     todos
 }
 
-async fn print_all_unclosed_todos(cli_conf: CommandConf, conf: Conf) -> Result<(), CacheWriteError> {
-    if should_update_cache(&cli_conf, DEFAULT_REFRESH_TIME_MINUTES) {
+async fn print_all_unclosed_todos(
+    cli_conf: CommandConf,
+    conf: Conf,
+) -> Result<(), CacheWriteError> {
+    if should_update_cache(&cli_conf) {
         update_cache_from_remote_issues(conf, &cli_conf).await?;
     }
 
@@ -135,7 +162,7 @@ async fn print_all_unclosed_todos(cli_conf: CommandConf, conf: Conf) -> Result<(
 
 #[allow(dead_code)]
 async fn print_all_todos(cli_conf: CommandConf, conf: Conf) -> Result<(), CacheWriteError> {
-    if should_update_cache(&cli_conf, DEFAULT_REFRESH_TIME_MINUTES) {
+    if should_update_cache(&cli_conf) {
         update_cache_from_remote_issues(conf, &cli_conf).await?;
     }
 
