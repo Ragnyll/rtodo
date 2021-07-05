@@ -66,13 +66,16 @@ fn create_new_local_todo(cli_conf: &CommandConf) -> Result<(), RunError> {
 }
 
 fn should_update_cache(conf: &CommandConf) -> bool {
-    if conf.force_refresh_cache {
+    if conf.force_no_refresh_cache {
+        return false;
+    }
+
+    if conf.force_refresh_cache || !std::path::Path::new(&conf.cache_path).exists() {
         return true;
     }
 
     // NOTE: not monotonic, but should be accurate enough for a refresh every few hours
     let now = SystemTime::now();
-
     let cache_modified_time = metadata(&conf.cache_path)
         .expect(&format!(
             "Unable to read metadata on cache file {}",
