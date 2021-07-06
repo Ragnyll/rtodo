@@ -8,9 +8,23 @@ _The world's most complicated todo application_
 ## Installation
 Compiled and tested using rustc 1.46
 
-Clone the repo and run the following:
+* Clone the repo and run the following:
 ```
 cargo install --path .
+```
+
+* Create the config with your Gitlab token at `~/.config/rtodo/conf.json`
+```
+{
+    "offline_mode": false,
+    "gitlab_api_conf" : {
+        "base_url": "https://gitlab.com/api/v4/",
+        "access_token": "<ACCESS_TOKEN>",
+        "username": "Ragnyll",
+        "timeout": null
+    }
+}
+
 ```
 
 ## Usage
