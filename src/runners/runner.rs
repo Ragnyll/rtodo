@@ -28,7 +28,7 @@ pub fn run_with_configuration(cli_conf: CommandConf) -> Result<(), RunError> {
     } else if cli_conf.no_ui {
         print_all_unclosed_todos(cli_conf, conf).expect("Unable to print all unclosed issues");
     } else {
-        display().expect("Unable to start the gui");
+        display(&conf).expect("Unable to start the gui");
     }
 
     Ok(())
