@@ -2,7 +2,7 @@ use std::io;
 use termion::{event::Key, raw::IntoRawMode, screen::AlternateScreen};
 use tui::Terminal;
 use tui::backend::TermionBackend;
-use tui::widgets::{Block, Borders, Cell, Row, Table, TableState};
+use tui::widgets::{Block, Borders, Cell, Row, Table};
 use tui::layout::{Layout, Constraint, Direction};
 use tui::style::{Style, Color, Modifier};
 
@@ -39,57 +39,6 @@ struct App {
 
 
 
-pub struct StatefulTable {
-    state: TableState,
-    items: Vec<Vec<String>>,
-}
-
-
-impl StatefulTable {
-    fn new() -> StatefulTable {
-        StatefulTable {
-            state: TableState::default(),
-            items: vec![
-                vec![String::from("Row11"), String::from("Row12"), String::from("Row13")],
-                vec![String::from("Row21"), String::from("Row22"), String::from("Row23")],
-                vec![String::from("Row31"), String::from("Row32"), String::from("Row33")],
-                vec![String::from("Row41"), String::from("Row42"), String::from("Row43")],
-                vec![String::from("Row51"), String::from("Row52"), String::from("Row53")],
-                vec![String::from("Row61"), String::from("Row62"), String::from("Row63")],
-                vec![String::from("Row71"), String::from("Row72"), String::from("Row73")],
-                vec![String::from("Row81"), String::from("Row82"), String::from("Row83")],
-                vec![String::from("Row91"), String::from("Row92"), String::from("Row93")],
-            ],
-        }
-    }
-    pub fn next(&mut self) {
-        let i = match self.state.selected() {
-            Some(i) => {
-                if i >= self.items.len() - 1 {
-                    0
-                } else {
-                    i + 1
-                }
-            }
-            None => 0,
-        };
-        self.state.select(Some(i));
-    }
-
-    pub fn previous(&mut self) {
-        let i = match self.state.selected() {
-            Some(i) => {
-                if i == 0 {
-                    self.items.len() - 1
-                } else {
-                    i - 1
-                }
-            }
-            None => 0,
-        };
-        self.state.select(Some(i));
-    }
-}
 /// Currently only optimized for 1/4 screen
 pub fn display(conf: &Conf) -> Result<(), Box<dyn std::error::Error + '_>> {
     let stdout = io::stdout().into_raw_mode()?;
@@ -99,7 +48,7 @@ pub fn display(conf: &Conf) -> Result<(), Box<dyn std::error::Error + '_>> {
 
     let events = Events::new();
 
-    let mut table = StatefulTable::new();
+    let mut table = components::issue_table::IssueTable::new();
 
     let mut app = App {
         tabs: TabsState::new(conf.get_todo_types()),
