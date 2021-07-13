@@ -23,6 +23,10 @@ impl TabsState {
         TabsState { titles, index: 0 }
     }
 
+    pub fn get_current_todo_type(&self) -> Option<&String> {
+        self.titles.get(self.index)
+    }
+
     pub fn next(&mut self) {
         self.index = (self.index + 1) % self.titles.len();
     }

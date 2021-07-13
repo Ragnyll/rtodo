@@ -42,7 +42,9 @@ pub fn display(conf: &Conf) -> Result<(), Box<dyn std::error::Error + '_>> {
                 Key::Char('q') => break,
                 Key::Char('j') => table.next(),
                 Key::Char('k') => table.previous(),
-                Key::Char('h') => app.tabs.next(),
+                Key::Char('h') => {
+                    app.tabs.next();
+                },
                 Key::Char('l') => app.tabs.previous(),
                 _ => {}
             }
