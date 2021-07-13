@@ -1,4 +1,6 @@
-use tui::widgets::{Table, TableState};
+use tui::widgets::{Block, Borders, Cell, Row, Table, TableState};
+use tui::layout::Constraint;
+use tui::style::{Style, Modifier};
 
 pub struct IssueTable {
     pub state: TableState,
@@ -50,4 +52,25 @@ impl IssueTable {
         };
         self.state.select(Some(i));
     }
+}
+
+pub fn create_table(table: &IssueTable) -> Table<'static> {
+    let selected_style = Style::default().add_modifier(Modifier::REVERSED);
+    let rows = table.items.iter().map(|item| {
+        let height = item
+            .iter()
+            .map(|content| content.chars().filter(|c| *c == '\n').count())
+            .max()
+            .unwrap_or(0)
+            + 1;
+        let cells = item.iter().map(|c| Cell::from(c.clone()));
+        Row::new(cells).height(height as u16).bottom_margin(1)
+    });
+    Table::new(rows)
+    .block(Block::default().borders(Borders::ALL))
+    .highlight_style(selected_style)
+    .highlight_symbol("> ")
+    .widths(&[
+        Constraint::Percentage(100)
+    ])
 }
