@@ -2,6 +2,8 @@ use tui::widgets::{Block, Borders, Cell, Row, Table, TableState};
 use tui::layout::Constraint;
 use tui::style::{Style, Modifier};
 
+use crate::cache_ops::cacher;
+
 pub struct IssueTable {
     pub state: TableState,
     pub items: Vec<Vec<String>>,
@@ -13,7 +15,6 @@ impl IssueTable {
         IssueTable {
             state: TableState::default(),
             items: vec![
-                vec![String::from("Row11"), String::from("Row12"), String::from("Row13")],
                 vec![String::from("Row21"), String::from("Row22"), String::from("Row23")],
                 vec![String::from("Row31"), String::from("Row32"), String::from("Row33")],
                 vec![String::from("Row41"), String::from("Row42"), String::from("Row43")],
@@ -25,9 +26,11 @@ impl IssueTable {
             ],
         }
     }
-    pub fn next(&mut self) {
+    pub fn next(&mut self, issue_type: &str) {
         let i = match self.state.selected() {
             Some(i) => {
+                let mut things_to_add = vec![vec![String::from("Row11"), String::from("Row12"), String::from("Row13")]];
+                self.items.append(&mut things_to_add);
                 if i >= self.items.len() - 1 {
                     0
                 } else {
@@ -39,7 +42,7 @@ impl IssueTable {
         self.state.select(Some(i));
     }
 
-    pub fn previous(&mut self) {
+    pub fn previous(&mut self, issue_type: &str) {
         let i = match self.state.selected() {
             Some(i) => {
                 if i == 0 {

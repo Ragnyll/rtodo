@@ -40,11 +40,9 @@ pub fn display(conf: &Conf) -> Result<(), Box<dyn std::error::Error + '_>> {
         if let Event::Input(input) = events.next()? {
             match input {
                 Key::Char('q') => break,
-                Key::Char('j') => table.next(),
-                Key::Char('k') => table.previous(),
-                Key::Char('h') => {
-                    app.tabs.next();
-                },
+                Key::Char('j') => table.next("thing"),
+                Key::Char('k') => table.previous("thing"),
+                Key::Char('h') => app.tabs.next(),
                 Key::Char('l') => app.tabs.previous(),
                 _ => {}
             }

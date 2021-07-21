@@ -97,6 +97,27 @@ pub fn read_all_unclosed_issues_to_mem(cache_path: &str) -> Result<Vec<TodoIssue
     Ok(filtered_todos)
 }
 
+pub fn read_all_unclosed_gitlab_issues_to_mem(cache_path: &str) -> Result<Vec<TodoIssue>, CacheReadError> {
+    let filtered_todos = read_into_mem(
+        cache_path,
+        // TODO: This is stupid. fix this
+        Some(|todos: Vec<TodoIssue>| -> Vec<TodoIssue> {
+            todos
+                .into_iter()
+                .filter(|t| match t.get_state() {
+                    IssueState::Closed => false,
+                    _ => {
+                        println!("{:?}", t);
+                        t.source.contains("gitlab")
+                    }
+                })
+                .collect::<Vec<TodoIssue>>()
+        }),
+    )
+    .expect("Unable to read all unclosed gitlab issues into memory");
+    Ok(filtered_todos)
+}
+
 #[derive(Debug)]
 pub struct CacheWriteError {
     details: String,

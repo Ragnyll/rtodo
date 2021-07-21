@@ -5,10 +5,10 @@ pub mod todo_issues {
         uuid: uuid::Uuid,
         source_id: Option<i32>,
         project: Option<Project>,
-        title: String,
+        pub title: String,
         description: Option<String>,
         state: IssueState,
-        source: String,
+        pub source: String,
         assignee: Option<User>,
     }
 
