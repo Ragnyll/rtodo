@@ -107,7 +107,6 @@ pub fn read_all_unclosed_gitlab_issues_to_mem(cache_path: &str) -> Result<Vec<To
                 .filter(|t| match t.get_state() {
                     IssueState::Closed => false,
                     _ => {
-                        println!("{:?}", t);
                         t.source.contains("gitlab")
                     }
                 })

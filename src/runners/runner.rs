@@ -13,6 +13,7 @@ use crate::converters::GitlabIssueContainer;
 use crate::models::todo_issue::todo_issues::{TodoIssue, IssueState};
 use crate::conf::conf::Conf;
 use crate::models::todo_issue::todo_issues::Convertable;
+use crate::cache_ops::cacher;
 use crate::gui::gui_main::display;
 
 const DEFAULT_CACHE_REFRESH_TIME: u16 = 7200; // Cache will refresh every 2 hours
@@ -28,7 +29,7 @@ pub fn run_with_configuration(cli_conf: CommandConf) -> Result<(), RunError> {
     } else if cli_conf.no_ui {
         print_all_unclosed_todos(cli_conf, conf).expect("Unable to print all unclosed issues");
     } else {
-        display(&conf).expect("Unable to start the gui");
+        display(&conf, String::from(cli_conf.cache_path)).expect("Unable to start the gui");
     }
 
     Ok(())

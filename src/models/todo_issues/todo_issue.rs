@@ -2,7 +2,7 @@ pub mod todo_issues {
     /// A struct representing an issue todo
     #[derive(Debug, Serialize, Deserialize)]
     pub struct TodoIssue {
-        uuid: uuid::Uuid,
+        pub uuid: uuid::Uuid,
         source_id: Option<i32>,
         project: Option<Project>,
         pub title: String,

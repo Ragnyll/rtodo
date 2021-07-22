@@ -11,26 +11,25 @@ pub struct IssueTable {
 
 
 impl IssueTable {
-    pub fn new() -> IssueTable {
+    pub fn new(cache_path: &str) -> IssueTable {
+        let all_issues = cacher::read_all_unclosed_gitlab_issues_to_mem(&cache_path).expect("Unable to load gitlab issues from cache into gui");
+        let mut all_issue_titles: Vec<Vec<String>> = vec!();
+        for issue in all_issues {
+            all_issue_titles.push(vec![issue.uuid.to_string(), String::from(&issue.title[0..5])]);
+        }
+
+
         IssueTable {
             state: TableState::default(),
-            items: vec![
-                vec![String::from("Row21"), String::from("Row22"), String::from("Row23")],
-                vec![String::from("Row31"), String::from("Row32"), String::from("Row33")],
-                vec![String::from("Row41"), String::from("Row42"), String::from("Row43")],
-                vec![String::from("Row51"), String::from("Row52"), String::from("Row53")],
-                vec![String::from("Row61"), String::from("Row62"), String::from("Row63")],
-                vec![String::from("Row71"), String::from("Row72"), String::from("Row73")],
-                vec![String::from("Row81"), String::from("Row82"), String::from("Row83")],
-                vec![String::from("Row91"), String::from("Row92"), String::from("Row93")],
-            ],
+            items: all_issue_titles,
         }
     }
+
     pub fn next(&mut self, issue_type: &str) {
         let i = match self.state.selected() {
             Some(i) => {
-                let mut things_to_add = vec![vec![String::from("Row11"), String::from("Row12"), String::from("Row13")]];
-                self.items.append(&mut things_to_add);
+                // let mut things_to_add = vec![vec![String::from("Row11"), String::from("Row12"), String::from("Row13")]];
+                // self.items.append(&mut things_to_add);
                 if i >= self.items.len() - 1 {
                     0
                 } else {

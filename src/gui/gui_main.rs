@@ -9,7 +9,8 @@ use super::components;
 use super::events::events::{Event, Events};
 
 /// Currently only optimized for 1/4 screen
-pub fn display(conf: &Conf) -> Result<(), Box<dyn std::error::Error + '_>> {
+/// TODO: figure out the lifetime issue
+pub fn display(conf: &Conf, cache_path: String) -> Result<(), Box<dyn std::error::Error + '_>> {
     let stdout = io::stdout().into_raw_mode()?;
     let stdout = AlternateScreen::from(stdout);
     let backend = TermionBackend::new(stdout);
@@ -17,7 +18,7 @@ pub fn display(conf: &Conf) -> Result<(), Box<dyn std::error::Error + '_>> {
 
     let mut app = components::app::App::new(conf);
     let events = Events::new();
-    let mut table = components::issue_table::IssueTable::new();
+    let mut table = components::issue_table::IssueTable::new(&cache_path);
 
     loop {
         terminal.draw(|f| {
