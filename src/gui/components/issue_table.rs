@@ -15,9 +15,8 @@ impl IssueTable {
         let all_issues = cacher::read_all_unclosed_gitlab_issues_to_mem(&cache_path).expect("Unable to load gitlab issues from cache into gui");
         let mut all_issue_titles: Vec<Vec<String>> = vec!();
         for issue in all_issues {
-            all_issue_titles.push(vec![issue.uuid.to_string(), String::from(&issue.title[0..5])]);
+            all_issue_titles.push(vec![issue.uuid.to_string(), issue.title]);
         }
-
 
         IssueTable {
             state: TableState::default(),
@@ -25,11 +24,9 @@ impl IssueTable {
         }
     }
 
-    pub fn next(&mut self, issue_type: &str) {
+    pub fn next(&mut self) {
         let i = match self.state.selected() {
             Some(i) => {
-                // let mut things_to_add = vec![vec![String::from("Row11"), String::from("Row12"), String::from("Row13")]];
-                // self.items.append(&mut things_to_add);
                 if i >= self.items.len() - 1 {
                     0
                 } else {
@@ -41,7 +38,7 @@ impl IssueTable {
         self.state.select(Some(i));
     }
 
-    pub fn previous(&mut self, issue_type: &str) {
+    pub fn previous(&mut self) {
         let i = match self.state.selected() {
             Some(i) => {
                 if i == 0 {
@@ -73,6 +70,7 @@ pub fn create_table(table: &IssueTable) -> Table<'static> {
     .highlight_style(selected_style)
     .highlight_symbol("> ")
     .widths(&[
-        Constraint::Percentage(100)
+        Constraint::Percentage(30),
+        Constraint::Percentage(70)
     ])
 }
