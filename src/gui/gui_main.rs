@@ -43,8 +43,16 @@ pub fn display(conf: &Conf, cache_path: String) -> Result<(), Box<dyn std::error
                 Key::Char('q') => break,
                 Key::Char('j') => table.next(),
                 Key::Char('k') => table.previous(),
-                Key::Char('h') => app.tabs.next(),
-                Key::Char('l') => app.tabs.previous(),
+                Key::Char('h') => {
+                    app.tabs.previous();
+                    println!("{:?}",app.tabs.get_current_todo_type());
+                    table.refresh_with_issue_type(&cache_path, &"local");
+                },
+                Key::Char('l') => {
+                    app.tabs.next();
+                    println!("{:?}",app.tabs.get_current_todo_type());
+                    table.refresh_with_issue_type(&cache_path, &"gitlab");
+                },
                 _ => {}
             }
         }

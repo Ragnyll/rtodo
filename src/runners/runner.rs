@@ -13,7 +13,6 @@ use crate::converters::GitlabIssueContainer;
 use crate::models::todo_issue::todo_issues::{TodoIssue, IssueState};
 use crate::conf::conf::Conf;
 use crate::models::todo_issue::todo_issues::Convertable;
-use crate::cache_ops::cacher;
 use crate::gui::gui_main::display;
 
 const DEFAULT_CACHE_REFRESH_TIME: u16 = 7200; // Cache will refresh every 2 hours

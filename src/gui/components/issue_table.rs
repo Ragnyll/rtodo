@@ -12,7 +12,7 @@ pub struct IssueTable {
 
 impl IssueTable {
     pub fn new(cache_path: &str) -> IssueTable {
-        let all_issues = cacher::read_all_unclosed_gitlab_issues_to_mem(&cache_path).expect("Unable to load gitlab issues from cache into gui");
+        let all_issues = cacher::read_all_unclosed_issue_of_source_type_to_mem(&cache_path, "local").expect("Unable to load gitlab issues from cache into gui");
         let mut all_issue_titles: Vec<Vec<String>> = vec!();
         for issue in all_issues {
             all_issue_titles.push(vec![issue.uuid.to_string(), issue.title]);
@@ -45,6 +45,29 @@ impl IssueTable {
                     self.items.len() - 1
                 } else {
                     i - 1
+                }
+            }
+            None => 0,
+        };
+        self.state.select(Some(i));
+    }
+
+    pub fn refresh_with_issue_type(&mut self, cache_path: &str, issue_type: &str) {
+        let all_issues = cacher::read_all_unclosed_issue_of_source_type_to_mem(&cache_path, issue_type).expect(&format!("Unable to load {} from cache into gui", issue_type));
+        let mut all_issue_titles: Vec<Vec<String>> = vec!();
+        for issue in all_issues {
+            all_issue_titles.push(vec![issue.uuid.to_string(), issue.title]);
+        }
+
+        let i = match self.state.selected() {
+            Some(i) => {
+                self.items.clear();
+                let mut things_to_add = all_issue_titles;
+                self.items.append(&mut things_to_add);
+                if i >= self.items.len() - 1 {
+                    0
+                } else {
+                    i + 1
                 }
             }
             None => 0,
