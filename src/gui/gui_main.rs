@@ -19,6 +19,7 @@ pub fn display(conf: &Conf, cache_path: String) -> Result<(), Box<dyn std::error
     let mut app = components::app::App::new(conf);
     let events = Events::new();
     let mut table = components::issue_table::IssueTable::new(&cache_path);
+    table.next();
 
     loop {
         terminal.draw(|f| {
@@ -45,13 +46,13 @@ pub fn display(conf: &Conf, cache_path: String) -> Result<(), Box<dyn std::error
                 Key::Char('k') => table.previous(),
                 Key::Char('h') => {
                     app.tabs.previous();
-                    println!("{:?}",app.tabs.get_current_todo_type());
-                    table.refresh_with_issue_type(&cache_path, &"local");
+                    let next_todo_type = app.tabs.get_next_todo_type().expect("could not determine current_tab_type");
+                    table.refresh_with_issue_type(&cache_path, next_todo_type);
                 },
                 Key::Char('l') => {
                     app.tabs.next();
-                    println!("{:?}",app.tabs.get_current_todo_type());
-                    table.refresh_with_issue_type(&cache_path, &"gitlab");
+                    let next_todo_type = app.tabs.get_next_todo_type().expect("could not determine current_tab_type");
+                    table.refresh_with_issue_type(&cache_path, next_todo_type);
                 },
                 _ => {}
             }

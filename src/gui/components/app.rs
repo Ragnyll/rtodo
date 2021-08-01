@@ -23,8 +23,15 @@ impl TabsState {
         TabsState { titles, index: 0 }
     }
 
+
+    #[allow(dead_code)]
     pub fn get_current_todo_type(&self) -> Option<&String> {
         self.titles.get(self.index)
+    }
+
+    pub fn get_next_todo_type(&self) -> Option<&String> {
+        let index = self.index % self.titles.len();
+        self.titles.get(index)
     }
 
     pub fn next(&mut self) {

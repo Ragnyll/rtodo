@@ -28,9 +28,9 @@ impl Conf {
     /// Returns the issue types that will be scraped for based on the conf values
     pub fn get_todo_types(&self) -> Vec<String> {
         let mut todo_types = vec!();
-        todo_types.push(String::from("Local"));
+        todo_types.push(String::from("local"));
         if self.gitlab_api_conf.is_some() {
-            todo_types.push(String::from("Gitlab"));
+            todo_types.push(String::from("gitlab"));
         }
 
         todo_types
