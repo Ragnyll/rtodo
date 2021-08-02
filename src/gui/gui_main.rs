@@ -3,12 +3,13 @@ use termion::{event::Key, raw::IntoRawMode, screen::AlternateScreen};
 use tui::Terminal;
 use tui::backend::TermionBackend;
 use tui::layout::{Layout, Constraint, Direction};
-
 use tui::{
-    widgets::{Block, Borders, Clear},
+    text::Spans,
+    widgets::{Block, Borders, Clear, Paragraph, Wrap},
     layout::Rect,
 };
 use crate::conf::conf::Conf;
+use crate::cache_ops::cacher;
 use super::components;
 use super::events::events::{Event, Events};
 
@@ -75,11 +76,51 @@ pub fn display(conf: &Conf, cache_path: String) -> Result<(), Box<dyn std::error
             // When the popup is visible grab the currently selected issue from the table and show
             // all the details on it
             if app.popup_visible {
-                // table.items[table.state.selected().unwrap()][1]
+                // There will only ever be 1 in this array, so just get the 0 index.
+                let issue = cacher::read_issue_into_memory_by_uuid(&cache_path, uuid::Uuid::parse_str(&table.items[table.state.selected().unwrap()][0]).expect("Was not able to unwrap issue into uuid")).expect("unable to retrive issue from cache");
+                if issue.len() != 1 {
+                    panic!("issue retrieved was not unique");
+                }
+                let issue = &issue[0];
+                let title = Spans::from(format!("Title: {}", issue.title));
+                let project: Spans;
+                if issue.project.is_some() {
+                    project = Spans::from(format!("Project: {}", issue.project.as_ref().unwrap().title));
+                } else {
+                    project = Spans::from("Project: No associated project");
+                }
+
+                let description: Spans;
+                if issue.description.is_some() {
+                    description = Spans::from(format!("Description: {}", issue.description.as_ref().unwrap()));
+                } else {
+                    description = Spans::from("Description: No associated description");
+                }
+
+                let assignee: Spans;
+                if issue.assignee.is_some() {
+                    assignee = Spans::from(format!("Description: {}", issue.assignee.as_ref().unwrap().username));
+                } else {
+                    assignee = Spans::from("Description: No associated description");
+                }
+
+
+                let text = vec![
+                    title,
+                    Spans::from(""),
+                    project,
+                    Spans::from(""),
+                    description,
+                    Spans::from(""),
+                    assignee,
+                ];
+
                 let block = Block::default().borders(Borders::ALL);
                 let area = centered_rect(70, 80, size);
+
+                let paragraph = Paragraph::new(text).block(block).wrap(Wrap { trim: true });
                 f.render_widget(Clear, area); //this clears out the background
-                f.render_widget(block, area);
+                f.render_widget(paragraph, area);
             }
         })?;
 
