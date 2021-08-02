@@ -101,7 +101,6 @@ fn update_cache_from_remote_issues(
     let mut all_issues: Vec<TodoIssue> = read_local_issues_to_mem(&cli_conf.cache_path)
         .expect("Unable to read local issues into memory");
 
-
     tokio::runtime::Builder::new_multi_thread()
         .enable_all()
         .build()
@@ -151,12 +150,10 @@ async fn update_issues_from_gitlab(conf: Conf) -> Vec<TodoIssue> {
     todos
 }
 
-fn print_all_unclosed_todos(
-    cli_conf: CommandConf,
-    conf: Conf,
-) -> Result<(), CacheWriteError> {
+fn print_all_unclosed_todos(cli_conf: CommandConf, conf: Conf) -> Result<(), CacheWriteError> {
     if should_update_cache(&cli_conf) {
-        update_cache_from_remote_issues(conf, &cli_conf).expect("Unable to update cache from remote issues");
+        update_cache_from_remote_issues(conf, &cli_conf)
+            .expect("Unable to update cache from remote issues");
     }
 
     let todos = read_all_unclosed_issues_to_mem(&cli_conf.cache_path).expect(&format!(
@@ -174,7 +171,8 @@ fn print_all_unclosed_todos(
 #[allow(dead_code)]
 fn print_all_todos(cli_conf: CommandConf, conf: Conf) -> Result<(), CacheWriteError> {
     if should_update_cache(&cli_conf) {
-        update_cache_from_remote_issues(conf, &cli_conf).expect("Unable to update cache from remote issues");
+        update_cache_from_remote_issues(conf, &cli_conf)
+            .expect("Unable to update cache from remote issues");
     }
 
     let todos = read_all_issues_to_mem(&cli_conf.cache_path).expect(&format!(

@@ -119,8 +119,10 @@ pub fn read_all_unclosed_issues_to_mem(cache_path: &str) -> Result<Vec<TodoIssue
     Ok(filtered_todos)
 }
 
-
-pub fn read_all_unclosed_issue_of_source_type_to_mem(cache_path: &str, issue_source_type: &str) -> Result<Vec<TodoIssue>, CacheReadError> {
+pub fn read_all_unclosed_issue_of_source_type_to_mem(
+    cache_path: &str,
+    issue_source_type: &str,
+) -> Result<Vec<TodoIssue>, CacheReadError> {
     let filtered_todos = read_into_mem(
         cache_path,
         // TODO: This is stupid. fix this
@@ -129,9 +131,7 @@ pub fn read_all_unclosed_issue_of_source_type_to_mem(cache_path: &str, issue_sou
                 .into_iter()
                 .filter(|t| match t.get_state() {
                     IssueState::Closed => false,
-                    _ => {
-                        t.source.to_lowercase().contains(issue_source_type)
-                    }
+                    _ => t.source.to_lowercase().contains(issue_source_type),
                 })
                 .collect::<Vec<TodoIssue>>()
         }),

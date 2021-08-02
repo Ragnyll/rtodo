@@ -17,10 +17,9 @@ impl App {
     pub fn toggle_popup(&mut self) {
         match self.popup_visible {
             true => self.popup_visible = false,
-            false => self.popup_visible = true
+            false => self.popup_visible = true,
         }
     }
-
 }
 
 pub struct TabsState {

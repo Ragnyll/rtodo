@@ -9,11 +9,12 @@ pub struct IssueTable {
     pub items: Vec<Vec<String>>,
 }
 
-
 impl IssueTable {
     pub fn new(cache_path: &str) -> IssueTable {
-        let all_issues = cacher::read_all_unclosed_issue_of_source_type_to_mem(&cache_path, "local").expect("Unable to load gitlab issues from cache into gui");
-        let mut all_issue_titles: Vec<Vec<String>> = vec!();
+        let all_issues =
+            cacher::read_all_unclosed_issue_of_source_type_to_mem(&cache_path, "local")
+                .expect("Unable to load gitlab issues from cache into gui");
+        let mut all_issue_titles: Vec<Vec<String>> = vec![];
         for issue in all_issues {
             all_issue_titles.push(vec![issue.uuid.to_string(), issue.title]);
         }
@@ -53,8 +54,11 @@ impl IssueTable {
     }
 
     pub fn refresh_with_issue_type(&mut self, cache_path: &str, issue_type: &str) {
-        let all_issues = cacher::read_all_unclosed_issue_of_source_type_to_mem(&cache_path, issue_type).expect(&format!("Unable to load {} from cache into gui", issue_type));
-        let mut all_issue_titles: Vec<Vec<String>> = vec!();
+        let all_issues =
+            cacher::read_all_unclosed_issue_of_source_type_to_mem(&cache_path, issue_type).expect(
+                &format!("Unable to load {} from cache into gui", issue_type),
+            );
+        let mut all_issue_titles: Vec<Vec<String>> = vec![];
         for issue in all_issues {
             all_issue_titles.push(vec![issue.uuid.to_string(), issue.title]);
         }
@@ -89,11 +93,8 @@ pub fn create_table(table: &IssueTable) -> Table<'static> {
         Row::new(cells).height(height as u16).bottom_margin(1)
     });
     Table::new(rows)
-    .block(Block::default().borders(Borders::ALL))
-    .highlight_style(selected_style)
-    .highlight_symbol("> ")
-    .widths(&[
-        Constraint::Percentage(30),
-        Constraint::Percentage(70)
-    ])
+        .block(Block::default().borders(Borders::ALL))
+        .highlight_style(selected_style)
+        .highlight_symbol("> ")
+        .widths(&[Constraint::Percentage(30), Constraint::Percentage(70)])
 }
