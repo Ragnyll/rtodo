@@ -81,6 +81,7 @@ pub fn parse_line() -> CommandConf {
         .version("0.1")
         .author("Ragnyll <ragnyll@gallowzhumour.dev>")
         .about("manages todos and issues across disparate sources")
+        .after_help("TUI controls:\n    q    quit\n    h    previous tab\n    l    next tab\n    j    next todo\n    k    previous todo\n    v    detailed view of the currently highlighted todo")
         .arg(
             Arg::new("config")
                 .short('c')

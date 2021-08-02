@@ -2,14 +2,14 @@ pub mod todo_issues {
     /// A struct representing an issue todo
     #[derive(Debug, Serialize, Deserialize)]
     pub struct TodoIssue {
-        uuid: uuid::Uuid,
+        pub uuid: uuid::Uuid,
         source_id: Option<i32>,
-        project: Option<Project>,
-        title: String,
-        description: Option<String>,
+        pub project: Option<Project>,
+        pub title: String,
+        pub description: Option<String>,
         state: IssueState,
-        source: String,
-        assignee: Option<User>,
+        pub source: String,
+        pub assignee: Option<User>,
     }
 
     impl TodoIssue {
@@ -69,7 +69,7 @@ pub mod todo_issues {
     #[derive(Debug, Serialize, Deserialize)]
     pub struct Project {
         source_id: i32,
-        title: String,
+        pub title: String,
         description: Option<String>,
         web_url: Option<String>,
         owner: Owner,
@@ -130,7 +130,7 @@ pub mod todo_issues {
     #[derive(Debug, Serialize, Deserialize)]
     pub struct User {
         id: i32,
-        username: String,
+        pub username: String,
     }
 
     impl User {
