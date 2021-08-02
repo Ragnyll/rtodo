@@ -1,6 +1,6 @@
 [package]
 name = "rtodo"
-version = "0.1.0"
+version = "1.0.0"
 authors = ["ragnyll <ragnyll@gallowzhumour.dev>"]
 edition = "2018"
 
