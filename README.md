@@ -29,6 +29,10 @@ cargo install --path .
 
 ## Usage
 ```
+rtodo 1.0
+Ragnyll <ragnyll@gallowzhumour.dev>
+manages todos and issues across disparate sources
+
 USAGE:
     rtodo [FLAGS] [OPTIONS] [SUBCOMMAND]
 
@@ -47,4 +51,13 @@ SUBCOMMANDS:
     close    close a todo with the given uuid. NOTE: Closes on remote issue do not sync.
     help     Prints this message or the help of the given subcommand(s)
     new      creates a new local issue
+
+TUI controls:
+    q    quit
+    h    previous tab
+    l    next tab
+    j    next todo
+    k    previous todo
+    v    detailed view of the currently highlighted todo
+
 ```
