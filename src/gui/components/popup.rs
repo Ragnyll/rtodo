@@ -77,6 +77,8 @@ pub fn render_issue_popup<'a>(issue_uuid: &'a str, cache_path: &'a str) -> Parag
         assignee = Spans::from("Assignee: No associated assignee");
     }
 
+    let source = Spans::from(format!("Source: {}", issue.source));
+
     let text = vec![
         title,
         Spans::from(""),
@@ -85,6 +87,8 @@ pub fn render_issue_popup<'a>(issue_uuid: &'a str, cache_path: &'a str) -> Parag
         description,
         Spans::from(""),
         assignee,
+        Spans::from(""),
+        source,
     ];
 
     Paragraph::new(text).block(block).wrap(Wrap { trim: true })
