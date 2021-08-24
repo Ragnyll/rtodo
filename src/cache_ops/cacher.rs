@@ -119,6 +119,13 @@ pub fn read_all_unclosed_issues_to_mem(cache_path: &str) -> Result<Vec<TodoIssue
     Ok(filtered_todos)
 }
 
+pub fn close_specific_todo(id: &str, cache_path: &str) -> Result<(), CacheWriteError> {
+    let all_issues: Vec<TodoIssue> = read_all_unclosed_issues_into_mem_excluding_uuid(cache_path,
+        uuid::Uuid::parse_str(id).unwrap()).unwrap();
+    write_to_cache_file(cache_path, all_issues).expect("unable to remove issue from todos");
+    Ok(())
+}
+
 pub fn read_all_unclosed_issue_of_source_type_to_mem(
     cache_path: &str,
     issue_source_type: &str,

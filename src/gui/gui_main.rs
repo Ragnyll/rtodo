@@ -7,6 +7,7 @@ use tui::widgets::Clear;
 use crate::conf::conf::Conf;
 use super::components;
 use super::events::events::{Event, Events};
+use crate::cache_ops::cacher;
 
 /// Currently only optimized for 1/4 screen
 /// TODO: figure out the lifetime issue
@@ -52,6 +53,19 @@ pub fn display(conf: &Conf, cache_path: String) -> Result<(), Box<dyn std::error
 
         if let Event::Input(input) = events.next()? {
             match input {
+                Key::Char('D') => {
+                    cacher::close_specific_todo(
+                        &table.items[table.state.selected().unwrap()][0],
+                        &cache_path,
+                    )
+                    .expect("unable to close todo");
+                    table.refresh_with_issue_type(
+                        &cache_path,
+                        app.tabs
+                            .get_current_todo_type()
+                            .expect("could not determine current todo type"),
+                    );
+                }
                 Key::Char('q') => break,
                 Key::Char('j') => table.next(),
                 Key::Char('k') => table.previous(),
